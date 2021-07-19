@@ -1,0 +1,134 @@
+- hosts: localhost
+  connection: chroot
+
+  gather_facts: true
+  become: true
+
+  environment:
+    # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
+  vars:
+    output_directory: output-files
+
+  tasks:
+
+    - name: Remove qemu-arm-static from OS as we have finished chrooting
+      file:
+        dest: "/tmp/pi-top-os/usr/bin/qemu-arm-static"
+        state: absent
+
+    - name: Move preload file back as we are done here
+      shell: "mv /tmp/pi-top-os/etc/ld.so.preload.bak /tmp/pi-top-os/etc/ld.so.preload"
+      args:
+        creates: "/tmp/pi-top-os/etc/ld.so.preload"
+
+    - name: Sync changes to image
+      shell: sync
+
+    - name: Get the rootfs loopback device
+      # The trailing space is important, zerofree only applies to extN file systems not fat so can only be used on the rootfs
+      shell: "mount -v | grep '/tmp/pi-top-os ' | cut -f1 -d' '"
+      args:
+        warn: false
+      register: rootfs_lo_device
+
+    - set_fact:
+        rootfs_device: "{{ rootfs_lo_device.stdout }}"
+        pt_image_device: "{{ rootfs_lo_device.stdout[:-2] }}"
+
+    - name: Get the original PARTUUID
+      shell: "cat /tmp/pi-top-os/boot/cmdline.txt | awk -F'[= -]' '{print $7}'"
+      register: partuuid_original
+
+    - name: Unmount
+      # Although umount can be called with recurse it fails, the mount point need to be unmounted in order
+      shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"
+      loop:
+        - /dev/pts
+        - /dev
+        - /proc
+        - /sys
+        - /boot
+        - /recovery
+        - # Not a typo - needed to unmount the root
+      ignore_errors: true
+
+    - name: zero empty space
+      shell: "zerofree -v {{ rootfs_device }}"
+      register: capture_zero_free_output
+
+    - name: "Check file system for errors"
+      shell: "e2fsck -y -f {{ rootfs_device }}"
+
+    - name: "Get the current size of the current system for debugging"
+      shell: "dumpe2fs -h {{ rootfs_device }} 2>&1 | awk -F: '/Block count/{count=$2} /Block size/{size=$2} END{print count*size}'"
+
+    - name: "Resize file system down to minimum"
+      shell: "resize2fs -M {{ rootfs_device }}"
+
+    - name: "Get the start of the rootfs partition"
+      shell: "fdisk -l new-image.img | grep img6 | awk '{ print $2 }'"
+      register: rootfs_part_start
+
+    - set_fact:
+        new_rootfs_start: "{{ rootfs_part_start.stdout }}"
+
+    - name: "Get the new size of the file system"
+      shell: "dumpe2fs -h {{ rootfs_device }} 2>&1 | awk -F: '/Block count/{count=$2} /Block size/{size=$2} END{print count*size}'"
+      register: new_fs_size
+
+    - set_fact:
+        # the 1.005 is just a bit of padding
+        new_rootfs_partition_end: "{{ (( new_fs_size.stdout | float / 512 * 1.005 ) | int ) + new_rootfs_start | int }}"
+
+    - name: "Resize rootfs partition"
+      shell: scripts/resize_partition.sh {{ pt_image_device }} 6 {{ new_rootfs_partition_end }}s
+
+    - name: "Resize extended partition"
+      shell: scripts/resize_partition.sh {{ pt_image_device }} 2 {{ new_rootfs_partition_end }}s
+
+    - name: Sync after partition changes
+      shell: sync
+
+    - name: Restore PARTUUID
+      shell: scripts/set_partuuid_on_device.sh {{ pt_image_device }} {{ partuuid_original.stdout }}
+      ignore_errors: true
+
+    - name: Unmount image, shouldn't be required
+      shell: umount --force new-image.img || true
+
+    - set_fact:
+        final_image_size: "{{ ((( new_rootfs_partition_end | int ) + 1 ) * 512 ) }}"
+
+    - name: "Truncate the image file down to the new size"
+      shell: "truncate --size={{ final_image_size }} new-image.img"
+
+    - set_fact:
+        output_image_filename: "{{ ansible_date_time.date }}-pi-topOS-sirius.img"
+
+    - name: Create a hard link to the image to use as the output filename
+      file:
+        src: "{{ playbook_dir }}/new-image.img"
+        dest: "{{ output_directory }}/{{ output_image_filename }}"
+        state: hard
+
+    - set_fact:
+        zip_filename: "pi-topOS-sirius_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.zip"
+
+    - name: Compress image into zip
+      archive:
+        path:
+          - "{{ output_directory }}/{{ output_image_filename }}"
+          - "{{ output_directory }}/metadata.txt"
+        dest: "{{ output_directory }}/{{ zip_filename }}"
+        format: zip
+      register: zip_result
+
+    - fail:
+        msg: Files were missing from the output zip
+      when: zip_result.missing | length > 0
+
+    - name: Remove the hard link to avoid any confusion
+      file:
+        dest: "{{ output_directory }}/{{ output_image_filename }}"
+        state: absent

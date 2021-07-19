@@ -1,0 +1,7 @@
+[raspi_os]
+/tmp/raspi-os ansible_connection=chroot
+
+[pi_top_os]
+/tmp/pi-top-os ansible_connection=chroot
+
+localhost ansible_connection=local

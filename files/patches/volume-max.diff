@@ -1,0 +1,12 @@
+Index: /usr/share/alsa/init/default
+===================================================================
+--- /usr/share/alsa/init/default
++++ /usr/share/alsa/init/default
+@@ -12,7 +12,7 @@
+
+ ENV{ppercent}:="75%"
+ ENV{cpercent}:="75%"
+-ENV{pvolume}:="-20dB"
++ENV{pvolume}:="0dB"
+ ENV{cvolume}:="12dB"
+ ENV{has_pmaster_vol}:="false"

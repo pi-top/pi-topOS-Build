@@ -1,0 +1,61 @@
+
+# Should match ID_BOOT to boot into pi-topOS
+MAIN_OS_BOOT_PARTITION="5"
+
+# Partition IDs on original pi-topOS image
+ID_ORIG_BOOT="p1"
+ID_ORIG_ROOTFS="p2"
+
+# Partition numbers on image with bootloader
+PART_NUM_RECOVERY="01"
+PART_NUM_EXTENDED="02"
+PART_NUM_BOOT="05"
+PART_NUM_ROOTFS="06"
+
+# Partition IDs on image with bootloader (p2 is an extended partition)
+ID_RECOVERY="p1"
+ID_EXTENDED="p2"
+ID_BOOT="p5"
+ID_ROOTFS="p6"
+
+# Directory on rootfs for the recovery partition
+RECOVERY_PARTITION_MOUNT_POINT="/recovery"
+
+
+function detach_lo_device_for_image_file {
+
+    # Detach a loopback device from a file, first unmounting any partitions that
+    # were mounted.
+
+    device_name=$(losetup -n --output NAME --associated "${1}")
+    if [ -n "${device_name}" ]; then
+
+        echo "Unmounting any existing lodevice parititions..."
+
+        findmnt -lo source | grep "${device_name}" | while read -r mounted_partition ; do
+            echo "Unmounting ${mounted_partition}..."
+            umount "${mounted_partition}" || true
+        done
+
+        echo "Detaching lodevice..."
+        losetup -d "${device_name}"
+    fi
+}
+
+function create_lo_device_for_image_file {
+
+    # Create a loopback device using an image file. If a device alread exists
+    # for that file, it will be detached first.
+
+    existing_device=$(losetup -n --output NAME --associated "${1}")
+    if [ -n "${existing_device}" ]; then
+
+        echo "Existing lodevice found: ${existing_device}"
+        detach_lo_device_for_image_file "${1}"
+    fi
+
+    losetup -Pf "${1}"
+
+    new_device=$(losetup --all | grep "${1}" | awk -F':' '{ print $1 }')
+    echo "New loopback device created: ${new_device}"
+}

@@ -1,0 +1,6 @@
+Index: /etc/issue
+===================================================================
+--- /etc/issue
++++ /etc/issue
+@@ -1 +0,0 @@
+-Raspberry Pi OS GNU/Linux 10 \n \l

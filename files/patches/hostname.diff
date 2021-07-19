@@ -1,0 +1,7 @@
+Index: /etc/hostname
+===================================================================
+--- /etc/hostname
++++ /etc/hostname
+@@ -1 +1 @@
+-raspberrypi
++pi-top

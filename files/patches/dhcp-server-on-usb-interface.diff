@@ -1,0 +1,19 @@
+Index: /etc/default/isc-dhcp-server
+===================================================================
+--- /etc/default/isc-dhcp-server
++++ /etc/default/isc-dhcp-server
+@@ -14,5 +14,13 @@
+
+ # On what interfaces should the DHCP server (dhcpd) serve DHCP requests?
+ #	Separate multiple interfaces with spaces, e.g. "eth0 eth1".
+-INTERFACESv4=""
++
++# [pi-topOS] START
++#
++# Set DHCP server to only server IP addresses on USB-OTG virtual Ethernet interface
++#
++INTERFACESv4="ptusb0"
+ INTERFACESv6=""
++#
++# [pi-topOS] END
++

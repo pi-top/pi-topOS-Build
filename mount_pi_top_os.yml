@@ -1,0 +1,159 @@
+- hosts: localhost
+  become_method: sudo
+  gather_facts: false
+
+  vars:
+    image_folder: ./
+    mount_point: /tmp/pi-top-os
+
+  tasks:
+
+    - set_fact:
+        image_name: new-image
+
+    - set_fact:
+        image_path: "{{ image_folder }}{{ image_name }}.img"
+
+    #    - name: Confirm qemu version is ok, stops obtuse errors
+    #      shell: qemu-system-x86_64 --version | head -n 1| cut -d' ' -f 4
+    #
+
+    - name: List the loop devices associated with image
+      command: "losetup --output=NAME --associated {{image_path}}"
+      register: loop_device_check
+
+    - name: Mount all the partitions to loop devices
+      command: "partx --add --verbose {{image_path}}"
+      become: true
+      when: loop_device_check.stdout_lines[1] is not defined
+
+    - name: List the loop devices associated with image
+      command: "losetup --output=NAME --associated {{image_path}}"
+      register: loop_devices
+
+    - debug:
+        var: loop_devices
+        verbosity: 2
+
+    - name: List all block device info
+      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}"
+      register: fstab_info_all
+
+    - debug:
+        var: fstab_info_all
+        verbosity: 2
+
+    - name: Get block device info for recovery
+      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "^recovery"
+      register: fstab_info_recovery
+
+    - name: Get block device info for boot
+      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "^boot"
+      register: fstab_info_boot
+
+    - name: Get block device info for rootfs
+      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "^rootfs"
+      register: fstab_info_rootfs
+
+    - set_fact:
+        recovery:
+          label: "{{ fstab_info_recovery.stdout_lines[0].split()[0] }}"
+          fstype: "{{ fstab_info_recovery.stdout_lines[0].split()[1] }}"
+          partuuid: "{{ fstab_info_recovery.stdout_lines[0].split()[4] }}"
+
+    - debug:
+        var: recovery
+        verbosity: 2
+
+    - set_fact:
+        boot:
+          label: "{{ fstab_info_boot.stdout_lines[0].split()[0] }}"
+          fstype: "{{ fstab_info_boot.stdout_lines[0].split()[1] }}"
+          partuuid: "{{ fstab_info_boot.stdout_lines[0].split()[4] }}"
+
+    - debug:
+        var: boot
+        verbosity: 2
+
+    - set_fact:
+        rootfs:
+          label: "{{ fstab_info_rootfs.stdout_lines[0].split()[0] }}"
+          fstype: "{{ fstab_info_rootfs.stdout_lines[0].split()[1] }}"
+          partuuid: "{{ fstab_info_rootfs.stdout_lines[0].split()[4] }}"
+
+    - debug:
+        var: rootfs
+        verbosity: 2
+
+    # Always unmount image, this means create mount point works correctly
+    # it a quick and easy way to enable re-running without errors
+    - name: Unmount image
+      shell: "umount --recursive --detach-loop {{ mount_point }}"
+      become: true
+      args:
+        executable: /bin/bash
+      # This is lazy way to avoid checking if something is already mounted
+      ignore_errors: true
+
+    # When Raspberry Pi OS is mounted to this point it messes up how ansible checks if the directory exists
+    # it should be skipped if the directory is mounted
+    - name: Create mount point
+      file:
+        path: "{{mount_point}}"
+        state: directory
+        recurse: true
+
+
+    - name: Mount rootfs
+      become: true
+      mount:
+        path: "{{ mount_point }}"
+        src: "PARTUUID={{ rootfs.partuuid }}"
+        fstype: "{{ rootfs.fstype }}"
+        fstab: /tmp/pi-top-fstab
+        opts: defaults,noatime
+        state: mounted
+
+    - name: Mount boot
+      become: true
+      mount:
+        path: "{{ mount_point }}/boot"
+        src: "PARTUUID={{ boot.partuuid }}"
+        fstype: "{{ boot.fstype }}"
+        fstab: /tmp/pi-top-fstab
+        opts: defaults
+        state: mounted
+
+    - name: Mount recovery
+      become: true
+      mount:
+        path: "{{ mount_point }}/recovery"
+        src: "PARTUUID={{ recovery.partuuid }}"
+        fstype: "{{ recovery.fstype }}"
+        fstab: /tmp/pi-top-fstab
+        opts: defaults
+        state: mounted
+
+    - name: Mount proc
+      become: true
+      command: mount -t proc /proc "{{ mount_point }}/proc"
+      args:
+        warn: false
+
+    - name: Mount sys
+      become: true
+      command: mount -t sysfs /sys "{{ mount_point }}/sys"
+      args:
+        warn: false
+
+    - name: Mount dev
+      become: true
+      command: mount -o bind /dev "{{ mount_point }}/dev"
+      args:
+        warn: false
+
+    - name: Mount dev/pts
+      become: true
+      command: mount -o bind /dev/pts "{{ mount_point }}/dev/pts"
+      args:
+        warn: false

@@ -1,0 +1,23 @@
+Index: /etc/dhcp/dhcpd.conf
+===================================================================
+--- /etc/dhcp/dhcpd.conf
++++ /etc/dhcp/dhcpd.conf
+@@ -105,3 +105,18 @@ ddns-update-style none;
+ #    range 10.0.29.10 10.0.29.230;
+ #  }
+ #}
++
++# [pi-topOS] START
++#
++# Configure DHCP server IP allocations
++#
++# Notes:
++# DHCP is configured to offer IP addresses via USB-OTG virtual Ethernet interface in /etc/default/isc-dhcp-server
++default-lease-time 600;
++max-lease-time 7200;
++ddns-update-style none;
++subnet 192.168.64.0 netmask 255.255.255.0 {
++  range 192.168.64.10 192.168.64.100;
++}
++#
++# [pi-topOS] END

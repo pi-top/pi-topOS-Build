@@ -1,0 +1,12 @@
+#!/bin/bash
+
+neofetch --backend off --disable title underline packages shell term cpu cols
+
+echo "With great power comes great responsibility. Be a maker, be a breaker.
+pi-topOS comes without warranty, to the extent permitted by applicable law.
+
+However, if you require assistance, check out our knowledge base:
+    https://knowledgebase.pi-top.com/knowledge
+
+Remember to be safe: note down your steps and back up your data!
+Happy tinkering! ♥"

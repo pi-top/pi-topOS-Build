@@ -1,0 +1,36 @@
+- hosts: localhost
+  connection: chroot
+  become_method: sudo
+  gather_facts: true
+  vars:
+    output_directory: output-files
+    recreate_pi_top_os_image: False
+
+  tasks:
+    - name: Clear the output directory
+      file:
+        state: absent
+        path: "{{ output_directory }}"
+
+    - name: Create output directory
+      file:
+        path: "{{ output_directory }}"
+        state: directory
+
+    - name: check if an image already exists
+      stat:
+        path: new-image.img
+      register: new_image_file
+
+    - name: Recreate empty pi-top image using script
+      become: true
+      shell: scripts/create_empty_pi-top_image.sh
+      when: recreate_pi_top_os_image or new_image_file.stat.exists == false
+
+    - name: Create metadata file
+      shell: scripts/create_image_metadata_file.sh
+
+    - name: Copy metadata file to output directory
+      copy:
+        src: /tmp/metadata.txt
+        dest: "{{ output_directory }}/metadata.txt"

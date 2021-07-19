@@ -1,0 +1,9 @@
+Index: /etc/zsh/zprofile
+===================================================================
+--- /etc/zsh/zprofile
++++ /etc/zsh/zprofile
+@@ -5,3 +5,4 @@
+ # shells invoked with the -l flag.)
+ #
+ # Global Order: zshenv, zprofile, zshrc, zlogin
++source /etc/profile

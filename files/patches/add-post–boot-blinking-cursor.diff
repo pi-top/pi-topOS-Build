@@ -1,0 +1,13 @@
+Index: /etc/profile
+===================================================================
+--- /etc/profile
++++ /etc/profile
+@@ -1,6 +1,8 @@
+ # /etc/profile: system-wide .profile file for the Bourne shell (sh(1))
+ # and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+
++setterm -cursor on
++
+ if [ "`id -u`" -eq 0 ]; then
+   PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ else

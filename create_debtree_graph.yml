@@ -1,0 +1,48 @@
+- import_playbook: mount_pi_top_os.yml
+
+- hosts: pi_top_os:192.168.*:!localhost
+  gather_facts: true
+  become: true
+  vars:
+    image_name: "pi-topOS-sirius"
+    mount_point: /tmp/pi-top-os
+
+  tasks:
+    - name: Copy debtree script to remote
+      copy:
+        src: scripts/create-dependency-graph.sh
+        dest: /tmp/create-dependency-graph.sh
+
+    - name: Install dependencies
+      apt:
+        pkg:
+        - debtree
+        - graphviz
+        - tree
+        update_cache: false
+        state: latest
+        install_recommends: true
+
+    - name: Run debtree script
+      shell: '/bin/bash /tmp/create-dependency-graph.sh {{image_name}} {{build_number}}'
+
+- hosts: localhost
+  connection: chroot
+  tasks:
+    - name: Copy graph images
+      copy:
+        src: /tmp/pi-top-os/tmp/debtree-images
+        dest: output-files/
+        mode: '0755'
+
+    - name: Unmount image
+      shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"
+      loop:
+        - /dev/pts
+        - /dev
+        - /proc
+        - /sys
+        - /boot
+        - /recovery
+        - # Not a typo - needed to unmount the root
+      ignore_errors: true
