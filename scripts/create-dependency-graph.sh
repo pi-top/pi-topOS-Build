@@ -38,6 +38,7 @@ packages=(
 	compton
 	coreutils
 	cups
+	dbus-x11
 	dconf-gsettings-backend
 	debianutils
 	desktop-file-utils
@@ -50,6 +51,7 @@ packages=(
 	fonts-noto-mono
 	fonts-piboto
 	fonts-roboto-hinted
+	fonts-symbola
 	gimp
 	gjs
 	gnome-calculator
@@ -74,6 +76,7 @@ packages=(
 	jackd2
 	jq
 	libatk1.0-0
+	libatlas-base-dev
 	libatlas-base-dev
 	libatomic1
 	libaubio5
@@ -108,11 +111,13 @@ packages=(
 	libjpeg62-dev
 	libjpeg62-turbo
 	libjs-sphinxdoc
+	liblapack-dev
 	liblcms1-dev
 	libmraa-dev
 	libmraa1
 	libnotify-bin
 	libnss3
+	libopenblas-dev
 	libpango-1.0-0
 	libpango1.0-0
 	libpangocairo-1.0-0
@@ -138,6 +143,7 @@ packages=(
 	libqt5webenginecore5
 	libqt5webenginewidgets5
 	libqt5widgets5
+	libqt5xml5
 	libqtgui4
 	libqwt-qt5-6
 	libraspberrypi-bin
@@ -215,7 +221,9 @@ packages=(
 	pt-pulse
 	pt-speaker
 	pt-tour
+	pulseaudio
 	pulseaudio-module-bluetooth
+	pulseaudio-module-jack
 	python-bluetool
 	python-games
 	python-numpy-abi9
@@ -272,6 +280,7 @@ packages=(
 	python3-scipy
 	python3-serial
 	python3-simple-pid
+	python3-sklearn
 	python3-smbus
 	python3-smbus2
 	python3-spidev
@@ -315,6 +324,9 @@ packages=(
 	sugar-turtleart-activity
 	supercollider-server
 	system-config-printer
+	systemd
+	udev
+	vim
 	visual-studio-code
 	vlc
 	wiring-pi
