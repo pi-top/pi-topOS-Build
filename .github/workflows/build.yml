@@ -60,7 +60,22 @@ jobs:
             -vv \
             full_pi-top-os_build.yml
 
-      - name: Upload
+      - name: Get zip filename
+        run: echo "ZIP_FILENAME=$(find output-files -name "*.zip" | head -n1)" >> $GITHUB_ENV
+
+      - name: Upload OS zip
         uses: actions/upload-artifact@v2
         with:
-          path: "output-files/"
+          name: pt-os
+          if-no-files-found: error
+          path: ${{ env.ZIP_FILENAME }}
+
+      - name: Upload metadata
+        uses: actions/upload-artifact@v2
+        with:
+          name: metadata
+          if-no-files-found: error
+          path: |
+            output-files/metadata.txt
+            output-files/debtree-images/pi-topOS-sirius_c1-systemd-tree.txt
+            output-files/debtree-images/pi-topOS-sirius_c1-deps-os-pt.png
