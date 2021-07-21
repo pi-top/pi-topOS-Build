@@ -1,34 +1,42 @@
-FROM pad92/ansible-alpine:latest
+FROM debian:unstable-slim
 
 # Build parameters
 ARG REPO_NAME=pi-top-os
 ARG DISTRO_NAME=sirius
 ARG BUILD_NUMBER=0
 ARG BUILD_COMMIT=unknown
-ARG RECREATE_PI_TOP_OS_IMAGE=true
 
 ENV DEPENDENCIES \
+  ansible \
+  qemu-user-static \
   unzip \
   zerofree
 
-RUN set -x && \
-    \
-    echo "==> Installing run dependencies..."  && \
-    apk add --no-cache ${DEPENDENCIES} && \
-    \
-    echo "==> Cleaning up..."  && \
-    rm -rf /var/cache/apk/* && \
-    \
-    echo "==> Running playbook..."  && \
-    sudo \
-      ANSIBLE_FORCE_COLOR=true \
-      TERM=xterm-color \
-      ansible-playbook \
-      --extra-vars repo_name="${REPO_NAME}" \
-      --extra-vars distro_name="${DISTRO_NAME}" \
-      --extra-vars build_number="${BUILD_NUMBER}" \
-      --extra-vars build_commit="${BUILD_COMMIT}" \
-      --extra-vars recreate_pi_top_os_image="${RECREATE_PI_TOP_OS_IMAGE}" \
-      --inventory inventory/chroots \
-      -vv \
-      full_pi-top-os_build.yml
+COPY * .
+
+RUN set -x && export ANSIBLE_FORCE_COLOR=true && export TERM=xterm-color
+
+RUN echo "==> Installing run dependencies..."  && \
+    apt-get update && \
+    apt-get install -y ${DEPENDENCIES} && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN echo "==> Running mount_raspios playbook..."  && \
+    ansible-playbook mount_raspios.yml
+
+RUN echo "==> Running create_pi_top_os_image playbook..."  && \
+    ansible-playbook create_pi_top_os_image.yml
+
+RUN echo "==> Running mount_pi_top_os playbook..."  && \
+    ansible-playbook mount_pi_top_os.yml
+
+RUN echo "==> Running install_pi_top_os playbook..."  && \
+    ansible-playbook \
+      --extra-vars "repo_name=${REPO_NAME} distro_name=${DISTRO_NAME} build_number=${BUILD_NUMBER} build_commit=${BUILD_COMMIT}" \
+      install_pi_top_os.yml
+
+RUN echo "==> Running finalise_pi_top_image playbook..."  && \
+    ansible-playbook finalise_pi_top_image.yml
+
+RUN echo "==> Running create_debtree_graph playbook..."  && \
+    ansible-playbook create_debtree_graph.yml

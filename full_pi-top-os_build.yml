@@ -1,6 +1,6 @@
 # Mounts the Image and installs pi-top OS
 # Also call create_pi-top-os which does the partioning and creates a new empty image, then 'rsync's Raspberry Pi OS into it
-- import_playbook: mount_raspbian_os.yml
+- import_playbook: mount_raspios.yml
 # Essentially calls the shell script, isn't run by default
 - import_playbook: create_pi_top_os_image.yml
 # Image needs to be mounted properly for java to work amongst other things
