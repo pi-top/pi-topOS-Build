@@ -32,16 +32,15 @@ jobs:
           mkdir artifacts
 
           # /dev/loop6?
-          # Ignore exit code for "the input device is not a TTY"
-          # sudo losetup -f || true
+          lo_device="$(sudo losetup -f)"
 
-          docker run -it --privileged \
+          docker run -tty --privileged \
               -e REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
               -e DISTRO_NAME="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
               -e BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
               -e BUILD_COMMIT="$(git rev-parse HEAD)" \
               -v $(pwd)/artifacts:/artifacts \
-              -v /dev/loop0:/dev/loop0 \
+              -v ${lo_device}:/dev/loop0 \
               pitop/os-builder:latest \
               .
 
