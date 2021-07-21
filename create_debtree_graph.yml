@@ -8,6 +8,7 @@
     mount_point: /tmp/pi-top-os
 
   tasks:
+    # TODO: provide path to store output files
     - name: Copy debtree script to remote
       copy:
         src: scripts/create-dependency-graph.sh
@@ -26,6 +27,7 @@
     - name: Run debtree script
       shell: '/bin/bash /tmp/create-dependency-graph.sh {{image_name}} {{build_number}}'
 
+# TODO: use same path from earlier
 - hosts: localhost
   connection: chroot
   tasks:

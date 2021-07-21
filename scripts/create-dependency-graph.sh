@@ -389,6 +389,7 @@ update_debtree_file "# remove non pi-top packages from graphs:" /etc/debtree/ski
 
 debtree "${debtree_args[@]}" pt-os | dot -T png >"${debtree_images_folder}/${IMG_NAME}_c${BUILD_NUMBER}-deps-os-pt.png"
 
+# TODO: move to another script
 tree --charset=ascii /etc/systemd/system >"${debtree_images_folder}/${IMG_NAME}_c${BUILD_NUMBER}-systemd-tree.txt"
 
 exit 0
