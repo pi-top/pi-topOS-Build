@@ -1,4 +1,4 @@
-FROM debian:unstable-slim
+FROM debian:unstable-slim as export
 
 # Build parameters
 ARG REPO_NAME=pi-top-os

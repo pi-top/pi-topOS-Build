@@ -23,25 +23,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
 
-      - name: Set up
-        run: sudo apt-get update && sudo apt-get install -y qemu-user-static
-
       - name: Build
         run: |
-          # chroot connection requires running as root
-          # 'ansible-playbook' is not in root user's PATH
-          sudo \
-            ANSIBLE_FORCE_COLOR=true \
-            TERM=xterm-color \
-            $(which ansible-playbook) \
-            --extra-vars repo_name="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
-            --extra-vars distro_name="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
-            --extra-vars number="${GITHUB_RUN_NUMBER}" \
-            --extra-vars commit="$(git rev-parse HEAD)" \
-            --extra-vars recreate_pi_top_os_image="true" \
-            --inventory inventory/chroots \
-            -vv \
-            full_pi-top-os_build.yml
+          DOCKER_BUILDKIT=1 docker build --target export . --output tmp --no-cache
+          mv tmp/output-files .
+          rm -rf tmp
 
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find output-files -name "*.zip" | head -n1)" >> $GITHUB_ENV
