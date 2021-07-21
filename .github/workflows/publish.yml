@@ -1,0 +1,28 @@
+name: pi-topOS Publish
+
+on: workflow_dispatch
+
+env:
+  RELEASE_NAME: "Sirius"
+
+jobs:
+  publish:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
+
+      - name: Download last successful pi-topOS build
+        uses: dawidd6/action-download-artifact@v2.14.0
+        with:
+          workflow: pi-topOS Build
+          event: workflow_dispatch
+          name: pt-os
+          path: pt-os
+
+      # TODO: extract build type from zip filename
+      - name: Upload to Google Cloud Storage
+        uses: google-github-actions/upload-cloud-storage@main
+        with:
+          path: pt-os/*.zip
+          destination: pt-os-builds/pi-topOS-${RELEASE_NAME}/images/${build_type}/

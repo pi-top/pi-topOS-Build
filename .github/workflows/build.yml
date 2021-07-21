@@ -7,38 +7,24 @@ on:
   workflow_dispatch:
     # Not required as defaults are handled later on (to support push events)
     inputs:
-      BUILD_REPO_NAME:
-        description: 'BUILD_REPO_NAME'
+      REPO_NAME:
+        description: 'REPO_NAME'
         required: false
         default: "pi-top-os"
-      BUILD_DISTRO_NAME:
-        description: 'BUILD_DISTRO_NAME'
+      DISTRO_NAME:
+        description: 'DISTRO_NAME'
         required: false
         default: "sirius"
-      FINAL_DISTRO_NAME:
-        description: 'FINAL_DISTRO_NAME'
-        required: false
-        default: "sirius"
-      IS_64_BIT:
-        description: 'IS_64_BIT'
-        required: false
-        default: "false"
 
 jobs:
-  build-pi-top-os:
+  build:
     runs-on: ubuntu-20.04
     steps:
-      - name: GitHub Environment Variables Action
-        uses: FranzDiebold/github-env-vars-action@v1.2.1
-
       - name: Checkout code
         uses: actions/checkout@v2.2.0
-        with:
-          fetch-depth: 0
 
       - name: Set up
-        run: |
-          sudo apt-get update && sudo apt-get install -y qemu-user-static
+        run: sudo apt-get update && sudo apt-get install -y qemu-user-static
 
       - name: Build
         run: |
@@ -48,13 +34,10 @@ jobs:
             ANSIBLE_FORCE_COLOR=true \
             TERM=xterm-color \
             $(which ansible-playbook) \
-            --extra-vars build_repo_name="${{ github.event.inputs.BUILD_REPO_NAME || 'pi-top-os' }}" \
-            --extra-vars final_repo_name="${{ github.event.inputs.BUILD_REPO_NAME || 'pi-top-os' }}" \
-            --extra-vars build_distro_name="${{ github.event.inputs.BUILD_DISTRO_NAME || 'sirius' }}" \
-            --extra-vars final_distro_name="${{ github.event.inputs.FINAL_DISTRO_NAME || 'sirius' }}" \
-            --extra-vars is_64_bit="${{ github.event.inputs.IS_64_BIT || 'false' }}" \
-            --extra-vars build_number="${GITHUB_RUN_NUMBER}" \
-            --extra-vars build_commit="$(git rev-parse HEAD)" \
+            --extra-vars repo_name="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
+            --extra-vars distro_name="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
+            --extra-vars number="${GITHUB_RUN_NUMBER}" \
+            --extra-vars commit="$(git rev-parse HEAD)" \
             --extra-vars recreate_pi_top_os_image="true" \
             --inventory inventory/chroots \
             -vv \
@@ -63,10 +46,19 @@ jobs:
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find output-files -name "*.zip" | head -n1)" >> $GITHUB_ENV
 
-      - name: Upload OS zip
+      - name: Get push artifact name
+        if: github.event_name == 'push'
+        run: echo "ARTIFACT_NAME=pt-os-${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+
+      # 'pt-os' artifact name is used by publish.yml
+      - name: Get manual trigger artifact name
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "ARTIFACT_NAME=pt-os" >> $GITHUB_ENV
+
+      - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: pt-os
+          name: ${{ env.ARTIFACT_NAME }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 

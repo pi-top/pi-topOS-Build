@@ -6,10 +6,8 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
-    build_repo_name: pi-top-os-internal
-    final_repo_name: pi-top-os
-    build_distro_name: sirius-unstable
-    final_distro_name: sirius
+    repo_name: pi-top-os
+    distro_name: sirius
     build_commit: unknown
     build_number: 0
 
@@ -64,11 +62,11 @@
       copy:
         src: files/pi-top.conf
         dest: /etc/apt/auth.conf.d/pi-top.conf
-      when: build_repo_name == "pi-top-os-internal"
+      when: repo_name == "pi-top-os-internal"
 
     - name: Add pi-top build repository
       apt_repository:
-        repo: "deb http://apt.pi-top.com/{{ build_repo_name }}/ {{ build_distro_name }} main contrib non-free"
+        repo: "deb http://apt.pi-top.com/{{ repo_name }}/ {{ distro_name }} main contrib non-free"
         filename: "pi-top"
         update_cache: true
 
@@ -78,7 +76,7 @@
         update_cache: true
         state: latest
         install_recommends: true
-        default_release: "{{ build_distro_name }}"
+        default_release: "{{ distro_name }}"
 
       register: apt_status
       retries: 5
@@ -92,24 +90,12 @@
       retries: 5
       until: apt_status is success
 
-    - name: Remove pi-top build repository
-      apt_repository:
-        repo: "deb http://apt.pi-top.com/{{ build_repo_name }}/ {{ build_distro_name }} main contrib non-free"
-        filename: "pi-top"
-        state: absent
-        update_cache: false
+# TODO: install recovery from GitHub zip
 
-    - name: Add pi-top final apt repository
-      apt_repository:
-        repo: "deb http://apt.pi-top.com/{{ final_repo_name }}/ {{ final_distro_name }} main contrib non-free"
-        filename: "pi-top"
-        update_cache: false
-
-    - name: Remove pi-top repository basic authentication
-      file:
-        dest: /etc/apt/auth.conf.d/pi-top.conf
-        state: absent
-      when: final_repo_name != "pi-top-os-internal"
+###################
+# START OS CONFIG #
+###################
+# TODO: move to a script?
 
     - name: Copy boot config.txt
       copy:
@@ -209,21 +195,9 @@
         state: directory
         recurse: true
 
-    - name: Add aliases to bash.bashrc
-      lineinfile:
-        dest: /etc/bash.bashrc
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        create: yes
-      with_items:
-        - { regexp: "^alias l=", line: "alias l='ls -l'" }
-        - { regexp: "^alias ..=", line: "alias ..='cd ..'" }
-        - { regexp: "^alias sstatus=", line: "alias sstatus='sudo systemctl status'" }
-        - { regexp: "^alias sstart=", line: "alias sstart='sudo systemctl start'" }
-        - { regexp: "^alias sstop=", line: "alias sstop='sudo systemctl stop'" }
-        - { regexp: "^alias srestart=", line: "alias srestart='sudo systemctl restart'" }
-        - { regexp: "^alias senable=", line: "alias senable='sudo systemctl enable'" }
-        - { regexp: "^alias sdisable=", line: "alias sdisable='sudo systemctl disable'" }
+#################
+# END OS CONFIG #
+#################
 
     - name: Replace placeholders in pt-issue
       replace:
@@ -234,9 +208,8 @@
       - { placeholder: 'IMG_NAME', replace: 'Sirius'}
       - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
       - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
-      - { placeholder: 'BUILD_SOURCES_REPO', replace: '{{ build_distro_name }}'}
-      - { placeholder: 'FINAL_SOURCES_REPO', replace: '{{ final_distro_name }}'}
-      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
+      - { placeholder: 'SOURCES_REPO', replace: '{{ distro_name }}'}
+      - { placeholder: 'SYSTEM_COMMIT', replace: '{{ build_commit }}'}
 
     - name: Remove leftover raspi-ui-overrides directory
       file:
