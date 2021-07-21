@@ -40,7 +40,7 @@ jobs:
               -e BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
               -e BUILD_COMMIT="$(git rev-parse HEAD)" \
               -v $(pwd)/artifacts:/artifacts \
-              -v ${lo_device}:/dev/loop0 \
+              -v ${lo_device}:${lo_device} \
               pitop/pi-top-os-builder:latest \
               .
 
