@@ -31,16 +31,12 @@ jobs:
         run: |
           mkdir artifacts
 
-          # /dev/loop6?
-          lo_device="$(sudo losetup -f)"
-
           docker run --tty --privileged \
               -e REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
               -e DISTRO_NAME="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
               -e BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
               -e BUILD_COMMIT="$(git rev-parse HEAD)" \
               -v $(pwd)/artifacts:/artifacts \
-              -v ${lo_device}:${lo_device} \
               pitop/pi-top-os-builder:latest \
               .
 

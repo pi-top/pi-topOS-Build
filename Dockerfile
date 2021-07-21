@@ -6,6 +6,8 @@ ENV DISTRO_NAME=sirius
 ENV BUILD_NUMBER=0
 ENV BUILD_COMMIT=unknown
 
+ENV RPI_OS_ZIP_DIR
+
 ENV DEPENDENCIES \
   ansible \
   qemu-user-static \

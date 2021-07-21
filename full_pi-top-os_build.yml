@@ -1,5 +1,8 @@
 # Mounts the Image and installs pi-top OS
-# Also call create_pi-top-os which does the partioning and creates a new empty image, then 'rsync's Raspberry Pi OS into it
+
+# Get Raspberry Pi OS, if it's not already available
+- import_playbook: playbooks/get_raspios.yml
+# Mount all partitions of RPi OS ready for chroot
 - import_playbook: playbooks/mount_raspios.yml
 # Essentially calls the shell script, isn't run by default
 - import_playbook: playbooks/create_pi_top_os_image.yml
