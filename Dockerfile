@@ -38,5 +38,5 @@ RUN echo "==> Running install_pi_top_os playbook..."  && \
 RUN echo "==> Running finalise_pi_top_image playbook..."  && \
     ansible-playbook finalise_pi_top_image.yml
 
-RUN echo "==> Running create_debtree_graph playbook..."  && \
-    ansible-playbook create_debtree_graph.yml
+RUN echo "==> Running analyse_build playbook..."  && \
+    ansible-playbook analyse_build.yml

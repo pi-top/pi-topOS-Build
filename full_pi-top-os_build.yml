@@ -9,5 +9,5 @@
 - import_playbook: install_pi_top_os.yml
 # Finalise image e.g. cleanup, zip, setup fstab etc.
 - import_playbook: finalise_pi_top_image.yml
-# Create and upload debtree graphs
-- import_playbook: create_debtree_graph.yml
+# Create and upload debtree graph and service tree graph
+- import_playbook: analyse_build.yml

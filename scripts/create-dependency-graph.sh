@@ -365,7 +365,7 @@ update_debtree_file() {
 	append_to_file "$(printf '%s\n' "${packages[@]}")" "${conf_file}"
 }
 
-debtree_images_folder="/tmp/debtree-images"
+debtree_images_folder="/tmp/artifacts"
 if [ ! -d "${debtree_images_folder}" ]; then
 	mkdir "${debtree_images_folder}"
 else

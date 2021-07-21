@@ -31,11 +31,12 @@
 - hosts: localhost
   connection: chroot
   tasks:
-    - name: Copy graph images
-      copy:
-        src: /tmp/pi-top-os/tmp/debtree-images
+    - name: Copy OS metadata files
+        src: "{{ item }}"
         dest: output-files/
         mode: '0755'
+      with_fileglob:
+        - "/tmp/pi-top-os/tmp/artifacts/*"
 
     - name: Unmount image
       shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"

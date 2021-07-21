@@ -61,6 +61,4 @@ jobs:
           name: metadata
           if-no-files-found: error
           path: |
-            output-files/metadata.txt
-            output-files/debtree-images/pi-topOS-sirius_c1-systemd-tree.txt
-            output-files/debtree-images/pi-topOS-sirius_c1-deps-os-pt.png
+            output-files/*
