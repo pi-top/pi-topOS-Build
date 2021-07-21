@@ -32,7 +32,7 @@ jobs:
           mkdir artifacts
 
           # /dev/loop0
-          sudo losetup -f
+          sudo losetup -f || true
 
           docker run -it --privileged \
               -e REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
