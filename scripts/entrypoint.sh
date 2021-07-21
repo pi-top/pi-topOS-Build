@@ -10,7 +10,7 @@ IFS=$'\n\t'
 # Check for OS zip from Docker env var path
 # and move into correct location for `get_raspios.yml`
 
-OS_ZIP_PATH="$(find "${RPI_OS_ZIP_DIR}" -name "*.zip" | head -n1)"
+OS_ZIP_PATH="$(find /zip -name "*.zip" | head -n1)"
 if [[ -n "${OS_ZIP_PATH:-}" ]]; then
     cp "${OS_ZIP_PATH}" /run/playbooks/
 fi
