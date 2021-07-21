@@ -34,7 +34,7 @@ jobs:
           # /dev/loop6?
           lo_device="$(sudo losetup -f)"
 
-          docker run -tty --privileged \
+          docker run --tty --privileged \
               -e REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
               -e DISTRO_NAME="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
               -e BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
