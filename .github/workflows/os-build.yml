@@ -1,6 +1,7 @@
 name: pi-topOS Build
 
 on:
+  # Run on any commit
   push:
     branches:
       - "**"
@@ -15,6 +16,9 @@ on:
         description: 'DISTRO_NAME'
         required: false
         default: "sirius"
+  schedule:
+    # Run daily at midnight
+    - cron:  '0 0 * * *'
 
 jobs:
   build:
@@ -25,19 +29,23 @@ jobs:
 
       - name: Build
         run: |
-          DOCKER_BUILDKIT=1 docker build \
-              --build-arg REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
-              --build-arg DISTRO_NAME="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
-              --build-arg BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
-              --build-arg BUILD_COMMIT="$(git rev-parse HEAD)" \
-              --target export \
-              --output tmp --no-cache \
+          mkdir artifacts
+
+          # /dev/loop0
+          sudo losetup -f          
+              
+          docker run -it --privileged \
+              -e REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
+              -e DISTRO_NAME="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
+              -e BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
+              -e BUILD_COMMIT="$(git rev-parse HEAD)" \
+              -v $(pwd)/artifacts:/artifacts \
+              -v /dev/loop0:/dev/loop0 \
+              pitop/os-builder:latest \
               .
-          mv tmp/output-files .
-          rm -rf tmp
 
       - name: Get zip filename
-        run: echo "ZIP_FILENAME=$(find output-files -name "*.zip" | head -n1)" >> $GITHUB_ENV
+        run: echo "ZIP_FILENAME=$(find artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
 
       - name: Get push artifact name
         if: github.event_name == 'push'
