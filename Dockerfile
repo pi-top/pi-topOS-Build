@@ -1,10 +1,10 @@
 FROM debian:unstable-slim as export
 
-# Build parameters
-ARG REPO_NAME=pi-top-os
-ARG DISTRO_NAME=sirius
-ARG BUILD_NUMBER=0
-ARG BUILD_COMMIT=unknown
+# Build information
+ENV REPO_NAME=pi-top-os
+ENV DISTRO_NAME=sirius
+ENV BUILD_NUMBER=0
+ENV BUILD_COMMIT=unknown
 
 ENV DEPENDENCIES \
   ansible \
