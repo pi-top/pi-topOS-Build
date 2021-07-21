@@ -41,7 +41,7 @@ jobs:
               -e BUILD_COMMIT="$(git rev-parse HEAD)" \
               -v $(pwd)/artifacts:/artifacts \
               -v ${lo_device}:/dev/loop0 \
-              pitop/os-builder:latest \
+              pitop/pi-top-os-builder:latest \
               .
 
       - name: Get zip filename
