@@ -16,7 +16,7 @@ ENV ANSIBLE_FORCE_COLOR true
 ENV TERM xterm-color
 
 WORKDIR /run
-COPY * /run
+COPY . /run
 
 RUN echo "==> Installing run dependencies..."  && \
     apt-get update && \
