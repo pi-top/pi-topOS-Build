@@ -24,12 +24,6 @@
         fail_msg: "Ansible version must be greater than 2.8.0"
         success_msg: "Ansible is newer than 2.8.0"
 
-    - name: Check zerofree is installed
-      shell: command -v zerofree
-
-    - name: Check unzip is installed
-      shell: command -v unzip
-
     # - name: Check qemu is > 4
     #   shell: qemu-system-x86_64 --version | head -n 1 | cut -d' ' -f 4
     #   register: qemu_version
