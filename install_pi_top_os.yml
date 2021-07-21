@@ -59,8 +59,8 @@
       register: json_response
 
     - get_url:
-      url: "{{ json_response.json.assets[0].browser_download_url }}"
-      dest: ./recovery.zip
+        url: "{{ json_response.json.assets[0].browser_download_url }}"
+        dest: ./recovery.zip
 
     - name: Unzip recovery into partition 1
       unarchive:
