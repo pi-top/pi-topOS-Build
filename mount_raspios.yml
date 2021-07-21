@@ -17,23 +17,7 @@
       when: is_64_bit | bool
 
     - set_fact:
-        image_path: "{{ image_folder }}{{ image_name }}.img"
-
-    - assert:
-        that: "{{ ansible_version.full is version('2.8.0', '>=') }}"
-        fail_msg: "Ansible version must be greater than 2.8.0"
-        success_msg: "Ansible is newer than 2.8.0"
-
-    # - name: Check qemu is > 4
-    #   shell: qemu-system-x86_64 --version | head -n 1 | cut -d' ' -f 4
-    #   register: qemu_version
-    #   when: ansible_architecture == 'x86_64'
-
-    # - assert:
-    #     that: "{{ qemu_version.stdout is version('4.0.0', '>=') }}"
-    #     fail_msg: qemu must be greater than version 4 a lot of weird errors/bugs are related to qemu version, because low level system calls fail
-    #     success_msg: qemu is greater than 4.0.0
-    #   when: ansible_architecture == 'x86_64'
+        image_path: "{{ image_folder }}/{{ image_name }}.img"
 
     - name: Check what the latest Raspberry Pi OS image is
       uri:
@@ -50,7 +34,7 @@
 
     - name: Check if we have it locally
       stat:
-        path: "{{ image_folder }}{{ raspi_os_latest }}"
+        path: "{{ image_folder }}/{{ raspi_os_latest }}"
       register: stat_result
 
     - name: Download the image
@@ -62,7 +46,7 @@
 
     - name: Unzip the os image
       unarchive:
-        src: "{{ image_folder }}{{ image_name }}.zip"
+        src: "{{ image_folder }}/{{ image_name }}.zip"
         dest: "{{ image_folder }}"
         creates: "{{ image_path }}"
 
