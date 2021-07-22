@@ -211,6 +211,7 @@
         group: pi
         mode: '0755'
 
+    # Finalise image as pi-gen does in 'export-image/04-finalise/01-run.sh'
     - name: Update system time
       shell: "date -u '+%Y-%m-%d %H:%M:%S' > /etc/fake-hwclock.data"
       # shell: '/sbin/fake-hwclock save force'
