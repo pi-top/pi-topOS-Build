@@ -33,8 +33,8 @@ jobs:
           export TERM=xterm-color
 
           echo "==> Installing run dependencies..."
-          apt-get update
-          apt-get install -y ansible qemu-user-static unzip zerofree
+          sudo apt-get update
+          sudo apt-get install -y ansible qemu-user-static unzip zerofree
 
           echo "==> Running get_raspios playbook..."
           sudo $(which ansible-playbook) playbooks/get_raspios.yml
@@ -56,6 +56,9 @@ jobs:
               build_commit=${BUILD_COMMIT}"\
             " \
               install_pi_top_os.yml
+
+          echo "==> Running configure_pi_top_os playbook..."
+          sudo $(which ansible-playbook) playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
           sudo $(which ansible-playbook) playbooks/finalise_pi_top_image.yml
