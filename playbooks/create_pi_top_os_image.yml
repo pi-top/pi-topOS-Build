@@ -3,7 +3,7 @@
   become_method: sudo
   gather_facts: true
   vars:
-    output_directory: output-files
+    output_directory: artifacts
     recreate_pi_top_os_image: False
 
   tasks:

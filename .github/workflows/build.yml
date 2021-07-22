@@ -29,16 +29,39 @@ jobs:
 
       - name: Build
         run: |
-          mkdir artifacts
+          export ANSIBLE_FORCE_COLOR=true
+          export TERM=xterm-color
 
-          docker run --tty --privileged \
-              -e REPO_NAME="${{ github.event.inputs.REPO_NAME || 'pi-top-os' }}" \
-              -e DISTRO_NAME="${{ github.event.inputs.DISTRO_NAME || 'sirius' }}" \
-              -e BUILD_NUMBER="${GITHUB_RUN_NUMBER}" \
-              -e BUILD_COMMIT="$(git rev-parse HEAD)" \
-              -v $(pwd)/artifacts:/artifacts \
-              pitop/pi-top-os-builder:latest \
-              .
+          echo "==> Installing run dependencies..."
+          apt-get update
+          apt-get install -y ansible qemu-user-static unzip zerofree
+
+          echo "==> Running get_raspios playbook..."
+          sudo $(which ansible-playbook) playbooks/get_raspios.yml
+
+          echo "==> Running mount_raspios playbook..."
+          sudo $(which ansible-playbook) playbooks/mount_raspios.yml
+
+          echo "==> Running create_pi_top_os_image playbook..."
+          sudo $(which ansible-playbook) playbooks/create_pi_top_os_image.yml
+
+          echo "==> Running mount_pi_top_os playbook..."
+          sudo $(which ansible-playbook) playbooks/mount_pi_top_os.yml
+
+          echo "==> Running install_pi_top_os playbook..."
+          sudo $(which ansible-playbook) playbooks/ --extra-vars "\
+              repo_name=${REPO_NAME}" \
+              distro_name=${DISTRO_NAME} \
+              build_number=${BUILD_NUMBER} \
+              build_commit=${BUILD_COMMIT}"\
+            " \
+              install_pi_top_os.yml
+
+          echo "==> Running finalise_pi_top_image playbook..."
+          sudo $(which ansible-playbook) playbooks/finalise_pi_top_image.yml
+
+          echo "==> Running analyse_build playbook..."
+          sudo $(which ansible-playbook) playbooks/analyse_build.yml
 
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
@@ -65,4 +88,4 @@ jobs:
           name: metadata
           if-no-files-found: error
           path: |
-            output-files/*
+            artifacts/*

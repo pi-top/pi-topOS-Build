@@ -33,7 +33,7 @@
   tasks:
     - name: Copy OS metadata files
         src: "{{ item }}"
-        dest: output-files/
+        dest: artifacts/
         mode: '0755'
       with_fileglob:
         - "/tmp/pi-top-os/tmp/artifacts/*"
