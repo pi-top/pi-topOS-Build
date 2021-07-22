@@ -41,10 +41,10 @@ jobs:
           # Test that syntax is okay
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars "\
-              repo_name=${REPO_NAME}" \
+              repo_name=${REPO_NAME} \
               distro_name=${DISTRO_NAME} \
               build_number=${BUILD_NUMBER} \
-              build_commit=${BUILD_COMMIT}"\
+              build_commit=${BUILD_COMMIT}\
             " \
               playbooks/install_pi_top_os.yml
 
