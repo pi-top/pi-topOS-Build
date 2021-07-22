@@ -57,7 +57,7 @@ jobs:
             --extra-vars build_commit="$(git rev-parse HEAD)" \
             --extra-vars recreate_pi_top_os_image="true" \
             --inventory inventory/chroots \
-            -vv \
+            -vvv \
             full_pi-top-os_build.yml
 
       - name: Upload
