@@ -27,11 +27,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
 
-      - name: Set up
+      - name: Install playbook dependencies
         run: |
-          echo "==> Installing run dependencies..."
-          sudo apt-get update
-          sudo apt-get install -y ansible qemu-user-static unzip zerofree
+          sudo apt-get update && sudo apt-get install -y ansible qemu-user-static unzip zerofree
 
       - name: Build
         run: |
