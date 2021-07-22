@@ -8,8 +8,6 @@
   vars:
     repo_name: pi-top-os
     distro_name: sirius
-    build_commit: unknown
-    build_number: 0
 
   tasks:
     - name: Upgrade Raspberry Pi OS

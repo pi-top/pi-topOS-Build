@@ -6,7 +6,6 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
-    repo_name: pi-top-os
     distro_name: sirius
     build_commit: unknown
     build_number: 0
