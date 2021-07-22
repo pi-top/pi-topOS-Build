@@ -15,17 +15,23 @@
     password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
 
   tasks:
+    - name: Replace placeholders in pt-issue
+      replace:
+        path: /etc/pt-issue
+        regexp: "{{ item.placeholder }}"
+        replace: "{{ item.replace }}"
+      with_items:
+      - { placeholder: 'IMG_NAME', replace: 'Sirius'}
+      - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
+      - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
+      - { placeholder: 'BUILD_SOURCES_REPO', replace: '{{ build_distro_name }}'}
+      - { placeholder: 'FINAL_SOURCES_REPO', replace: '{{ final_distro_name }}'}
+      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
+
     - name: Set pi user password
       user:
         name: pi
         password: "{{ password }}"
-
-    - name: Enable VNC Server (using symlink)
-      file:
-        dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
-        src: /usr/lib/systemd/system/vncserver-x11-serviced.service
-        state: link
-      when: not is_64_bit | bool
 
     - name: Copy autoboot.txt
       copy:
@@ -61,6 +67,7 @@
         dest: /etc/update-motd.d/10-pt-motd
         mode: '0755'
 
+    # TODO: minimise patches
     - name: Apply patches
       patch:
         # TODO: Add -vvv
@@ -84,34 +91,34 @@
         - static-ip-on-usb-interface.diff
         - us-keyboard.diff
 
-    - name: Disable OS updater for onboarding (using symlink)
-      file:
-        dest: /etc/systemd/system/graphical.target.wants/pt-os-updater.service
-        state: absent
+    - name: Onboarding - disable OS updater
+      command: systemctl disable pt-os-updater
 
-    - name: Disable firmware updater for onboarding (using symlink)
-      file:
-        dest: /etc/systemd/system/graphical.target.wants/pt-firmware-updater.service
-        state: absent
+    - name: Onboarding - disable firmware updater
+      command: systemctl disable pt-firmware-updater
 
-    - name: Disable Further Link for onboarding (using symlink)
-      file:
-        dest: /etc/systemd/system/multi-user.target.wants/pt-further-link.service
-        state: absent
+    - name: Onboarding - disable Further Link
+      command: systemctl disable pt-further-link
 
-    - name: Disable OLED menu until onboarding finishes (using symlink)
-      file:
-        dest: /etc/systemd/system/local-fs.target.wants/pt-sys-oled.service
-        state: absent
+    - name: Onboarding - disable OLED menu
+      command: systemctl disable pt-sys-oled
+
+    - name: Onboarding - disable cursor until after expanding FS
+      command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
+
+    - name: Onboarding - enable Wi-Fi Access Point mode
+      command: systemctl enable wifi-ap-sta
+
+    # AP mode only?
+    #
+    # - name: Enable VNC Server (using symlink)
+    #   file:
+    #     dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
+    #     src: /usr/lib/systemd/system/vncserver-x11-serviced.service
+    #     state: link
 
     - name: Disable ISC DHCP server (so that only pt-dhcp-server starts it)
       command: systemctl disable isc-dhcp-server
-
-    - name: Disable cursor until after expanding FS
-      command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
-
-    - name: Enable wifi-ap-sta (wifi access point)
-      command: systemctl enable wifi-ap-sta
 
     - name: Generate default locales
       locale_gen:
@@ -135,35 +142,6 @@
         path: /var/log/journal
         state: directory
         recurse: true
-
-    - name: Add aliases to bash.bashrc
-      lineinfile:
-        dest: /etc/bash.bashrc
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        create: yes
-      with_items:
-        - { regexp: "^alias l=", line: "alias l='ls -l'" }
-        - { regexp: "^alias ..=", line: "alias ..='cd ..'" }
-        - { regexp: "^alias sstatus=", line: "alias sstatus='sudo systemctl status'" }
-        - { regexp: "^alias sstart=", line: "alias sstart='sudo systemctl start'" }
-        - { regexp: "^alias sstop=", line: "alias sstop='sudo systemctl stop'" }
-        - { regexp: "^alias srestart=", line: "alias srestart='sudo systemctl restart'" }
-        - { regexp: "^alias senable=", line: "alias senable='sudo systemctl enable'" }
-        - { regexp: "^alias sdisable=", line: "alias sdisable='sudo systemctl disable'" }
-
-    - name: Replace placeholders in pt-issue
-      replace:
-        path: /etc/pt-issue
-        regexp: "{{ item.placeholder }}"
-        replace: "{{ item.replace }}"
-      with_items:
-      - { placeholder: 'IMG_NAME', replace: 'Sirius'}
-      - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
-      - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
-      - { placeholder: 'BUILD_SOURCES_REPO', replace: '{{ build_distro_name }}'}
-      - { placeholder: 'FINAL_SOURCES_REPO', replace: '{{ final_distro_name }}'}
-      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
 
     - name: Remove leftover raspi-ui-overrides directory
       file:
