@@ -27,6 +27,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2.2.0
 
+
+
       - name: Build
         run: |
           export ANSIBLE_FORCE_COLOR=true
@@ -36,7 +38,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ansible qemu-user-static unzip zerofree
 
-          ANSIBLE="sudo $(which ansible-playbook)"
+          ANSIBLE="sudo $(which ansible-playbook) -i inventory"
 
           echo "==> Running get_raspios playbook..."
           ${ANSIBLE} playbooks/get_raspios.yml
