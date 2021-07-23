@@ -183,8 +183,8 @@
     - name: Disable cursor until after expanding FS
       command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
 
-    - name: Enable wifi-ap-sta (wifi access point)
-      command: systemctl enable wifi-ap-sta
+    - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
+      command: wifi-ap-sta start
 
     - name: Generate default locales
       locale_gen:
