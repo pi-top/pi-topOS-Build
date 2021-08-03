@@ -130,6 +130,9 @@
     - name: Set default locale to US
       shell: update-locale LANG=en_US.UTF-8
 
+    - name: Set folder colors in Papirus theme
+      shell: wget -q -O - https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-folders/master/papirus-folders | SUDO_USER=pi /bin/bash /dev/stdin -C bluegrey --theme Papirus-Dark
+
     # More information on this file:
     # https://wiki.debian.org/systemd#Missing_startup_messages_on_console.28tty1.29_after_the_boot
     - name: Clear Plymouth splashscreen if booting to console
