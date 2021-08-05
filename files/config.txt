@@ -21,15 +21,19 @@
 # Display stack configuration /
 #//////////////////////////////
 
+# DRM VC4 V3D driver
+# Compatible with all non-Pi 4 models
+dtoverlay=vc4-kms-v3d
+
 # Set 1 display maximum as default case
 max_framebuffers=1
 
 [pi4]
-# DRM VC4 V3D driver on top of the dispmanx display stack - default on for pi4
-dtoverlay=vc4-fkms-v3d
-
 # Set 2 display maximum for RPi 4
 max_framebuffers=2
+
+# DRM VC4 V3D driver on top of the dispmanx display stack
+dtoverlay=vc4-fkms-v3d
 
 #//////////////////////////////////////
 # Additional networking configuration /
