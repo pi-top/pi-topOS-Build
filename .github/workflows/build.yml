@@ -7,25 +7,20 @@ on:
   workflow_dispatch:
     # Not required as defaults are handled later on (to support push events)
     inputs:
-      BUILD_REPO_NAME:
-        description: 'BUILD_REPO_NAME'
+      REPO_NAME:
+        description: 'REPO_NAME'
         required: false
         default: "pi-top-os"
-      BUILD_DISTRO_NAME:
-        description: 'BUILD_DISTRO_NAME'
+      DISTRO_NAME:
+        description: 'DISTRO_NAME'
         required: false
         default: "sirius"
-      FINAL_DISTRO_NAME:
-        description: 'FINAL_DISTRO_NAME'
-        required: false
-        default: "sirius"
-      IS_64_BIT:
-        description: 'IS_64_BIT'
-        required: false
-        default: "false"
+  schedule:
+    # Run daily at midnight
+    - cron:  '0 0 * * *'
 
 jobs:
-  build-pi-top-os:
+  build:
     runs-on: ubuntu-20.04
     steps:
       - name: GitHub Environment Variables Action
@@ -36,31 +31,72 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up
+      - name: Install playbook dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y qemu-user-static
+          sudo apt-get update && sudo apt-get install -y ansible qemu-user-static unzip zerofree
 
       - name: Build
         run: |
+          export ANSIBLE_FORCE_COLOR=true
+          export TERM=xterm-color
           # chroot connection requires running as root
           # 'ansible-playbook' is not in root user's PATH
-          sudo \
-            ANSIBLE_FORCE_COLOR=true \
-            TERM=xterm-color \
-            $(which ansible-playbook) \
-            --extra-vars build_repo_name="${{ github.event.inputs.BUILD_REPO_NAME || 'pi-top-os' }}" \
-            --extra-vars final_repo_name="${{ github.event.inputs.BUILD_REPO_NAME || 'pi-top-os' }}" \
-            --extra-vars build_distro_name="${{ github.event.inputs.BUILD_DISTRO_NAME || 'sirius' }}" \
-            --extra-vars final_distro_name="${{ github.event.inputs.FINAL_DISTRO_NAME || 'sirius' }}" \
-            --extra-vars is_64_bit="${{ github.event.inputs.IS_64_BIT || 'false' }}" \
-            --extra-vars build_number="${GITHUB_RUN_NUMBER}" \
-            --extra-vars build_commit="$(git rev-parse HEAD)" \
-            --extra-vars recreate_pi_top_os_image="true" \
-            --inventory inventory/chroots \
-            -vvv \
-            full_pi-top-os_build.yml
+          ANSIBLE="sudo $(which ansible-playbook) -i inventory -vvv"
 
-      - name: Upload
+          echo "==> Running get_raspios playbook..."
+          ${ANSIBLE} playbooks/get_raspios.yml
+
+          echo "==> Running mount_raspios playbook..."
+          ${ANSIBLE} playbooks/mount_raspios.yml
+
+          echo "==> Running create_pi_top_os_image playbook..."
+          ${ANSIBLE} playbooks/create_pi_top_os_image.yml
+
+          echo "==> Running mount_pi_top_os playbook..."
+          ${ANSIBLE} playbooks/mount_pi_top_os.yml
+
+          echo "==> Running install_pi_top_os playbook..."
+          ${ANSIBLE} --extra-vars "\
+              repo_name=${REPO_NAME} \
+              distro_name=${DISTRO_NAME} \
+            " playbooks/install_pi_top_os.yml
+
+          echo "==> Running configure_pi_top_os playbook..."
+          ${ANSIBLE} --extra-vars "\
+              distro_name=${DISTRO_NAME} \
+              build_number=${BUILD_NUMBER} \
+              build_commit=${BUILD_COMMIT}\
+            " playbooks/configure_pi_top_os.yml
+
+          echo "==> Running finalise_pi_top_image playbook..."
+          ${ANSIBLE} playbooks/finalise_pi_top_image.yml
+
+          echo "==> Running analyse_build playbook..."
+          ${ANSIBLE} playbooks/analyse_build.yml
+
+      - name: Get zip filename
+        run: echo "ZIP_FILENAME=$(find artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
+
+      - name: Get push artifact name
+        if: github.event_name == 'push'
+        run: echo "ARTIFACT_NAME=pt-os-${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+
+      # 'pt-os' artifact name is used by publish.yml
+      - name: Get manual trigger artifact name
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "ARTIFACT_NAME=pt-os" >> $GITHUB_ENV
+
+      - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          path: "output-files/"
+          name: ${{ env.ARTIFACT_NAME }}
+          if-no-files-found: error
+          path: ${{ env.ZIP_FILENAME }}
+
+      - name: Upload metadata
+        uses: actions/upload-artifact@v2
+        with:
+          name: metadata
+          if-no-files-found: error
+          path: |
+            artifacts/*
