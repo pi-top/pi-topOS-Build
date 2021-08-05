@@ -107,7 +107,7 @@
       command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
 
     - name: Onboarding - enable Wi-Fi Access Point mode
-      command: systemctl enable wifi-ap-sta
+      command: wifi-ap-sta enable
 
     # AP mode only?
     #
