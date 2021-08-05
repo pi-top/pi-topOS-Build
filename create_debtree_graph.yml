@@ -32,7 +32,7 @@
     - name: Copy graph images
       copy:
         src: /tmp/pi-top-os/tmp/debtree-images
-        dest: output-files/
+        dest: artifacts/
         mode: '0755'
 
     - name: Unmount image
