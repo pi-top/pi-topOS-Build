@@ -8,6 +8,9 @@
   vars:
     repo_name: experimental
     distro_name: sirius
+    # TODO: these vars should be received from previous steps
+    image_folder: ./
+    image_name: 2021-06-18-raspios-bullseye-armhf
 
   tasks:
         #    - name: Upgrade Raspberry Pi OS
@@ -48,23 +51,25 @@
       retries: 5
       until: apt_status is success
 
-# TODO: handle installing recovery from GitHub zip
-#     move to separate playbook/script? create-empty-pi-top-image.sh?
-#     seems better to handle at the point where the partition is being created!
-    - uri:
+    # TODO: handle installing recovery from GitHub zip
+    #     move to separate playbook/script? create-empty-pi-top-image.sh?
+    #     seems better to handle at the point where the partition is being created!
+    - name: Get information about recovery releases
+      uri:
         url: https://api.github.com/repos/pi-top/pi-topOS-Recovery/releases/latest
         return_content: true
       register: json_response
 
-    - get_url:
+    - name: Download latest recovery
+      get_url:
         url: "{{ json_response.json.assets[0].browser_download_url }}"
-        dest: ./recovery.zip
+        dest: /tmp/recovery.zip
 
     - name: Unzip recovery into partition 1
       unarchive:
-        src: "{{ image_folder }}{{ image_name }}.zip"
-        dest: "{{ image_folder }}"
-        creates: "{{ image_path }}"
+        remote_src: yes
+        src: /tmp/recovery.zip
+        dest: /recovery
 
     - name: Update all packages to the latest version
       apt:
