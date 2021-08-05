@@ -23,18 +23,6 @@
         name: pi
         password: "{{ password }}"
 
-    - name: Enable VNC Server (using symlink)
-      file:
-        dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
-        src: /usr/lib/systemd/system/vncserver-x11-serviced.service
-        state: link
-      when: not is_64_bit | bool
-
-    - name: Make recovery folder
-      file:
-        dest: /recovery
-        state: directory
-
     - name: Copy autoboot.txt
       copy:
         src: files/autoboot.txt
@@ -46,69 +34,18 @@
         src: files/pt-issue
         dest: /etc/pt-issue
 
-    - name: Upgrade Raspberry Pi OS
-      apt:
-        state: latest
-        update_cache: true
-        install_recommends: true
-      register: apt_status
-      retries: 5
-      until: apt_status is success
-
-    - name: Add pi-top Apt key
-      apt_key:
-        data: "{{ lookup('file', 'pt-apt-pc.asc') }}"
-        state: present
-
-    - name: Add pi-top repository basic authentication
-      copy:
-        src: files/pi-top.conf
-        dest: /etc/apt/auth.conf.d/pi-top.conf
-      when: build_repo_name == "pi-top-os-internal"
-
-    - name: Add pi-top build repository
-      apt_repository:
-        repo: "deb https://packagecloud.io/pi-top/{{ build_repo_name }}/debian/ bullseye main"
-        filename: "pi-top"
-        update_cache: true
-
-    - name: Install pt-os
-      apt:
-        name: pt-os
-        update_cache: true
-        state: latest
-        install_recommends: true
-
-      register: apt_status
-      retries: 5
-      until: apt_status is success
-
-    - name: Update all packages to the latest version
-      apt:
-        upgrade: dist
-        update_cache: true
-      register: apt_status
-      retries: 5
-      until: apt_status is success
-
-    - name: Remove pi-top build repository
-      apt_repository:
-        repo: "deb http://apt.pi-top.com/{{ build_repo_name }}/ {{ build_distro_name }} main contrib non-free"
-        filename: "pi-top"
-        state: absent
-        update_cache: false
-
-    - name: Add pi-top final apt repository
-      apt_repository:
-        repo: "deb http://apt.pi-top.com/{{ final_repo_name }}/ {{ final_distro_name }} main contrib non-free"
-        filename: "pi-top"
-        update_cache: false
-
-    - name: Remove pi-top repository basic authentication
-      file:
-        dest: /etc/apt/auth.conf.d/pi-top.conf
-        state: absent
-      when: final_repo_name != "pi-top-os-internal"
+    - name: Replace placeholders in pt-issue
+      replace:
+        path: /etc/pt-issue
+        regexp: "{{ item.placeholder }}"
+        replace: "{{ item.replace }}"
+      with_items:
+      - { placeholder: 'IMG_NAME', replace: 'Sirius'}
+      - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
+      - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
+      - { placeholder: 'BUILD_SOURCES_REPO', replace: '{{ build_distro_name }}'}
+      - { placeholder: 'FINAL_SOURCES_REPO', replace: '{{ final_distro_name }}'}
+      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
 
     - name: Copy boot config.txt
       copy:
@@ -185,6 +122,13 @@
     - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
       command: wifi-ap-sta enable
 
+    - name: Enable VNC Server (using symlink)
+      file:
+        dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
+        src: /usr/lib/systemd/system/vncserver-x11-serviced.service
+        state: link
+      when: not is_64_bit | bool
+
     - name: Generate default locales
       locale_gen:
         name: "{{ item }}"
@@ -208,34 +152,6 @@
         state: directory
         recurse: true
 
-    - name: Add aliases to bash.bashrc
-      lineinfile:
-        dest: /etc/bash.bashrc
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        create: yes
-      with_items:
-        - { regexp: "^alias l=", line: "alias l='ls -l'" }
-        - { regexp: "^alias ..=", line: "alias ..='cd ..'" }
-        - { regexp: "^alias sstatus=", line: "alias sstatus='sudo systemctl status'" }
-        - { regexp: "^alias sstart=", line: "alias sstart='sudo systemctl start'" }
-        - { regexp: "^alias sstop=", line: "alias sstop='sudo systemctl stop'" }
-        - { regexp: "^alias srestart=", line: "alias srestart='sudo systemctl restart'" }
-        - { regexp: "^alias senable=", line: "alias senable='sudo systemctl enable'" }
-        - { regexp: "^alias sdisable=", line: "alias sdisable='sudo systemctl disable'" }
-
-    - name: Replace placeholders in pt-issue
-      replace:
-        path: /etc/pt-issue
-        regexp: "{{ item.placeholder }}"
-        replace: "{{ item.replace }}"
-      with_items:
-      - { placeholder: 'IMG_NAME', replace: 'Sirius'}
-      - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
-      - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
-      - { placeholder: 'BUILD_SOURCES_REPO', replace: '{{ build_distro_name }}'}
-      - { placeholder: 'FINAL_SOURCES_REPO', replace: '{{ final_distro_name }}'}
-      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
 
     - name: Remove leftover raspi-ui-overrides directory
       file:
@@ -305,6 +221,7 @@
         group: pi
         mode: '0755'
 
+    # Finalise image as pi-gen does in 'export-image/04-finalise/01-run.sh'
     - name: Update system time
       shell: "date -u '+%Y-%m-%d %H:%M:%S' > /etc/fake-hwclock.data"
       # shell: '/sbin/fake-hwclock save force'
