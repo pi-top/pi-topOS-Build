@@ -57,7 +57,7 @@
 
     - name: Add pi-top Apt key
       apt_key:
-        data: "{{ lookup('file', 'pt-apt.asc') }}"
+        data: "{{ lookup('file', 'pt-apt-pc.asc') }}"
         state: present
 
     - name: Add pi-top repository basic authentication
@@ -68,7 +68,7 @@
 
     - name: Add pi-top build repository
       apt_repository:
-        repo: "deb http://apt.pi-top.com/{{ build_repo_name }}/ {{ build_distro_name }} main contrib non-free"
+        repo: "deb https://packagecloud.io/pi-top/{{ build_repo_name }}/debian/ bullseye main"
         filename: "pi-top"
         update_cache: true
 
@@ -78,7 +78,6 @@
         update_cache: true
         state: latest
         install_recommends: true
-        default_release: "{{ build_distro_name }}"
 
       register: apt_status
       retries: 5
