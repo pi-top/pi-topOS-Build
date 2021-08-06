@@ -93,6 +93,9 @@
         - static-ip-on-usb-interface.diff
         - us-keyboard.diff
 
+    - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
+      command: wifi-ap-sta enable
+
     - name: Disable OS updater for onboarding (using symlink)
       file:
         dest: /etc/systemd/system/graphical.target.wants/pt-os-updater.service
@@ -118,9 +121,6 @@
 
     - name: Disable cursor until after expanding FS
       command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
-
-    - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
-      command: wifi-ap-sta enable
 
     - name: Enable VNC Server (using symlink)
       file:
