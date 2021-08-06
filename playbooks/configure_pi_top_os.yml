@@ -91,7 +91,7 @@
     - name: Enable Onboarding (using symlink)
       shell: ln -sf /usr/lib/pt-web-portal/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
 
-	  - name: Disable notifications until onboarding is completed
+    - name: Disable notifications until onboarding is completed
       copy:
         src: /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service
         remote_src: yes
