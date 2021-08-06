@@ -104,7 +104,7 @@
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
     - set_fact:
-        output_image_filename: "{{ ansible_date_time.date }}-pi-topOS-sirius.img"
+        output_image_filename: "{{ ansible_date_time.date }}-pi-topOS.img"
 
     - name: Create a hard link to the image to use as the output filename
       file:
@@ -113,7 +113,7 @@
         state: hard
 
     - set_fact:
-        zip_filename: "pi-topOS-sirius_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.zip"
+        zip_filename: "pi-topOS_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.zip"
 
     - name: Compress image into zip
       archive:
