@@ -56,17 +56,15 @@ jobs:
           ${ANSIBLE} playbooks/mount_pi_top_os.yml
 
           echo "==> Running install_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars "\
-              repo_name=${REPO_NAME} \
-              distro_name=${DISTRO_NAME} \
-            " playbooks/install_pi_top_os.yml
+          ${ANSIBLE} --extra-vars repo_name=${REPO_NAME} \
+                     --extra-vars distro_name=${DISTRO_NAME} \
+                     playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars "\
-              distro_name=${DISTRO_NAME} \
-              build_number=${BUILD_NUMBER} \
-              build_commit=${BUILD_COMMIT}\
-            " playbooks/configure_pi_top_os.yml
+          ${ANSIBLE} --extra-vars distro_name=${DISTRO_NAME} \
+                     --extra-vars build_number=${BUILD_NUMBER} \
+                     --extra-vars build_commit=${BUILD_COMMIT}\
+                     playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
           ${ANSIBLE} playbooks/finalise_pi_top_image.yml
