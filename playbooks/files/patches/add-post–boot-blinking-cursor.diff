@@ -8,6 +8,6 @@ Index: /etc/profile
 
 +setterm -cursor on
 +
- if [ "`id -u`" -eq 0 ]; then
-   PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ if [ "$(id -u)" -eq 0 ]; then
+  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
  else
