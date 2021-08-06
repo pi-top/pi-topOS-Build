@@ -37,7 +37,7 @@
         regexp: "{{ item.placeholder }}"
         replace: "{{ item.replace }}"
       with_items:
-      - { placeholder: 'IMG_NAME', replace: 'Sirius'}
+      - { placeholder: 'IMG_NAME', replace: 'pi-topOS'}
       - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
       - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
       - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
