@@ -40,7 +40,7 @@
       register: stat_result
       when: image_exists.stat.exists == False
 
-    - name: Download the image
+    - name: Download latest image
       get_url:
         url: "{{ raspi_os_url }}"
         force: false
