@@ -13,15 +13,18 @@
         src: scripts/create-dependency-graph.sh
         dest: /tmp/create-dependency-graph.sh
 
-    - name: Install dependencies
-      apt:
-        pkg:
-        - debtree
-        - graphviz
-        - tree
-        update_cache: false
-        state: latest
-        install_recommends: true
+    # Dependencies are now installed as part of the core OS
+    # via 'pt-dev'
+    #
+    # - name: Install dependencies
+    #   apt:
+    #     pkg:
+    #     - debtree
+    #     - graphviz
+    #     - tree
+    #     update_cache: false
+    #     state: latest
+    #     install_recommends: true
 
     - name: Run debtree script
       shell: '/bin/bash /tmp/create-dependency-graph.sh {{image_name}} {{build_number}}'
