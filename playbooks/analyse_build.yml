@@ -4,7 +4,7 @@
   gather_facts: true
   become: true
   vars:
-    image_name: "pi-topOS-sirius"
+    image_name: "pi-topOS"
     mount_point: /tmp/pi-top-os
 
   tasks:
