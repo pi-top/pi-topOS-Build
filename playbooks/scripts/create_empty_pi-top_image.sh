@@ -70,8 +70,7 @@ size_of_recovery=$((1024 * 1024 * 128))
 # Set size of /boot to 256MB
 size_of_boot=$((1024 * 1024 * 256))
 
-# Set rootfs to 20GB, this is really big but it makes more sense to trim the image once cleanup has been done.
-# Otherwise its really easy to run out of space while and update is happening.
+# Set rootfs to 20GB to avoid running out of space during an update
 size_of_rootfs=$((1024 * 1024 * 1024 * 20))
 
 echo "size_of_recovery ${size_of_recovery} bytes"
