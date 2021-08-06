@@ -73,7 +73,7 @@ jobs:
           ${ANSIBLE} playbooks/analyse_build.yml
 
       - name: Get zip filename
-        run: echo "ZIP_FILENAME=$(find artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
+        run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
 
       - name: Get push artifact name
         if: github.event_name == 'push'
@@ -97,4 +97,4 @@ jobs:
           name: metadata
           if-no-files-found: error
           path: |
-            artifacts/*
+            playbooks/artifacts/*
