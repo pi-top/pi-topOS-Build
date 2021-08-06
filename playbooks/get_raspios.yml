@@ -5,8 +5,8 @@
   vars:
     is_64_bit: false
     image_folder: ./
-    image_name: 2021-05-07-raspios-buster-armhf-full
-    raspi_os_url: https://downloads.raspberrypi.org/raspios_full_armhf_latest
+    image_name: 2021-06-18-raspios-bullseye-armhf
+    raspi_os_url: https://storage.googleapis.com/pt-os-builds/raspios/2021-06-18-raspios-bullseye-armhf.zip
   tasks:
 
     - name: Check if we have it locally
