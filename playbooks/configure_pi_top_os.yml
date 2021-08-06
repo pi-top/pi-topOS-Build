@@ -12,6 +12,7 @@
     final_distro_name: sirius
     build_commit: unknown
     build_number: 0
+    is_64_bit: false
 
     # Created with :
     # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
