@@ -98,3 +98,4 @@ jobs:
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
+            !${{ env.ZIP_FILENAME }}
