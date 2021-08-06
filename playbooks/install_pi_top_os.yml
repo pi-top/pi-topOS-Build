@@ -7,7 +7,7 @@
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
     repo_name: experimental
-    distro_name: sirius
+    distro_name: bullseye
     # TODO: these vars should be received from previous steps
     image_folder: ./
     # image_name: 2021-05-07-raspios-buster-armhf-full
@@ -36,7 +36,7 @@
 
     - name: Add pi-top build repository
       apt_repository:
-        repo: "deb https://packagecloud.io/pi-top/{{ repo_name }}/debian/ bullseye main"
+        repo: "deb https://packagecloud.io/pi-top/{{ repo_name }}/debian/ {{ distro_name }} main"
         filename: "pi-top"
         update_cache: true
 
@@ -46,7 +46,7 @@
         update_cache: true
         state: latest
         install_recommends: true
-        #default_release: "{{ distro_name }}"
+        default_release: "{{ distro_name }}"
 
       register: apt_status
       retries: 5
