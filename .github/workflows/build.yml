@@ -31,7 +31,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install playbook dependencies
+      - name: Install ansible and playbook dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y ansible qemu-user-static unzip zerofree
 
