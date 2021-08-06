@@ -10,7 +10,8 @@
     distro_name: sirius
     # TODO: these vars should be received from previous steps
     image_folder: ./
-    image_name: 2021-05-07-raspios-buster-armhf-full
+    # image_name: 2021-05-07-raspios-buster-armhf-full
+    image_name: 2021-06-18-raspios-bullseye-armhf
 
   tasks:
         #    - name: Upgrade Raspberry Pi OS

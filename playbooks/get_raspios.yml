@@ -15,11 +15,11 @@
       register: image_exists
       when: not is_64_bit | bool
 
-    - set_fact:
-        image_name: 2020-05-27-raspios-buster-arm64
-        raspi_os_latest: "{{ image_name }}"
-        raspi_os_url: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2020-05-28/2020-05-27-raspios-buster-arm64.zip
-      when: is_64_bit | bool
+    # - set_fact:
+    #     image_name: 2020-05-27-raspios-buster-arm64
+    #     raspi_os_latest: "{{ image_name }}"
+    #     raspi_os_url: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2020-05-28/2020-05-27-raspios-buster-arm64.zip
+    #   when: is_64_bit | bool
 
     - set_fact:
         raspi_os_latest: "{{ image_name }}"
