@@ -72,11 +72,12 @@
         src: /tmp/recovery.zip
         dest: /recovery
 
-    - name: Update all packages to the latest version
-      apt:
-        upgrade: dist
-        update_cache: true
-      register: apt_status
-      retries: 5
-      until: apt_status is success
-
+    # SWITCHED OFF FOR FASTER BUILDS
+    #
+    # - name: Update all packages to the latest version
+    #   apt:
+    #     upgrade: dist
+    #     update_cache: true
+    #   register: apt_status
+    #   retries: 5
+    #   until: apt_status is success
