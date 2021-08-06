@@ -10,7 +10,7 @@ on:
       REPO_NAME:
         description: 'REPO_NAME'
         required: false
-        default: "pi-top-os"
+        default: "experimental"
       DISTRO_NAME:
         description: 'DISTRO_NAME'
         required: false
