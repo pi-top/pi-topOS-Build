@@ -238,7 +238,7 @@ cat <<EOF >"${pi_top_dir}/etc/fstab"
 proc            /proc           proc    defaults          0       0
 PARTUUID=${BOOT_PARTUUID}  /boot           vfat    defaults          0       2
 PARTUUID=${ROOT_PARTUUID}  /               ext4    defaults,noatime  0       1
-#PARTUUID=${RECOVERY_PARTUUID}  /recovery  vfat  defaults  0  2
+PARTUUID=${RECOVERY_PARTUUID}  /recovery  vfat  defaults  0  2
 EOF
 
 echo "New /etc/fstab :"
