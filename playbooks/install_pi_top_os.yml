@@ -28,12 +28,6 @@
         data: "{{ lookup('file', 'pt-apt-pc.asc') }}"
         state: present
 
-    - name: Add pi-top repository basic authentication
-      copy:
-        src: files/pi-top.conf
-        dest: /etc/apt/auth.conf.d/pi-top.conf
-      when: repo_name == "pi-top-os-internal"
-
     - name: Add pi-top build repository
       apt_repository:
         repo: "deb https://packagecloud.io/pi-top/{{ repo_name }}/debian/ {{ distro_name }} main"
