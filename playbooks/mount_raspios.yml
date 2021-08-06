@@ -4,7 +4,7 @@
 
   vars:
     image_folder: ./
-    image_name: 2021-06-18-raspios-bullseye-armhf
+    image_name: 2021-05-07-raspios-buster-armhf-full
     mount_point: /tmp/raspi-os
     raspi_os_url: https://downloads.raspberrypi.org/raspios_full_armhf_latest
   tasks:
