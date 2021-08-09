@@ -115,13 +115,6 @@
         - us-keyboard.diff
         - openbox-xdg-autostart-shebang.diff
 
-##############################
-# Display Port configuration #
-##############################
-# Should this be handled by the package?
-    - name: Disable ISC DHCP server (so that only pt-dhcp-server starts it)
-      command: systemctl disable isc-dhcp-server
-
 ###########################################
 # Onboarding setup: systemd/dbus services #
 ###########################################
