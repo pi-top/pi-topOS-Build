@@ -11,6 +11,7 @@ set -x
 
 IMG_NAME="${1}"
 BUILD_NUMBER="${2}"
+ARTIFACTS_PATH="${3:-/tmp/artifacts}"
 
 # NOTE: This list should not include ANY packages that are maintained in pi-top APT repos
 # (including mirrors/self-packaged)
@@ -365,11 +366,10 @@ update_debtree_file() {
 	append_to_file "$(printf '%s\n' "${packages[@]}")" "${conf_file}"
 }
 
-debtree_images_folder="/tmp/debtree-images"
-if [ ! -d "${debtree_images_folder}" ]; then
-	mkdir "${debtree_images_folder}"
+if [ ! -d "${ARTIFACTS_PATH}" ]; then
+	mkdir "${ARTIFACTS_PATH}"
 else
-	rm "${debtree_images_folder}"/*
+	rm "${ARTIFACTS_PATH}"/*
 fi
 
 # * include suggested packages
@@ -387,8 +387,8 @@ debtree_args=("--with-suggests" "--show-installed")
 # libc6-dev" | sudo tee /etc/debtree/skiplist
 update_debtree_file "# remove non pi-top packages from graphs:" /etc/debtree/skiplist
 
-debtree "${debtree_args[@]}" pt-os | dot -T png >"${debtree_images_folder}/${IMG_NAME}_c${BUILD_NUMBER}-deps-os-pt.png"
+debtree "${debtree_args[@]}" pt-os | dot -T png >"${ARTIFACTS_PATH}/${IMG_NAME}_c${BUILD_NUMBER}-deps-os-pt.png"
 
-tree --charset=ascii /etc/systemd/system >"${debtree_images_folder}/${IMG_NAME}_c${BUILD_NUMBER}-systemd-tree.txt"
+tree --charset=ascii /etc/systemd/system >"${ARTIFACTS_PATH}/${IMG_NAME}_c${BUILD_NUMBER}-systemd-tree.txt"
 
 exit 0

@@ -6,40 +6,36 @@
   vars:
     image_name: "pi-topOS"
     mount_point: /tmp/pi-top-os
+    artifacts_path: /tmp/artifacts
+
+  # Dependencies are now installed as part of the core OS via 'pt-dev':
+  #     - debtree
+  #     - graphviz
+  #     - tree
+  # This is because if this stage is run after image has been shrunk, there is not enough
+  # space to install the dependencies and store the artifacts
 
   tasks:
     - name: Copy debtree script to remote
       copy:
-        src: scripts/create-dependency-graph.sh
-        dest: /tmp/create-dependency-graph.sh
-
-    # Dependencies are now installed as part of the core OS
-    # via 'pt-dev'
-    #
-    # - name: Install dependencies
-    #   apt:
-    #     pkg:
-    #     - debtree
-    #     - graphviz
-    #     - tree
-    #     update_cache: false
-    #     state: latest
-    #     install_recommends: true
+        src: scripts/analyse-build.sh
+        dest: /tmp/analyse-build.sh
 
     - name: Run debtree script
-      shell: '/bin/bash /tmp/create-dependency-graph.sh {{image_name}} {{build_number}}'
+      shell: '/bin/bash /tmp/analyse-build.sh {{image_name}} {{build_number}} {{artifacts_path}}'
 
 - hosts: localhost
   connection: chroot
   tasks:
-    - name: Copy graph images
-      copy:
-        src: /tmp/pi-top-os/tmp/debtree-images
+    - name: Copy OS metadata files
+        src: "{{ item }}"
         dest: artifacts/
         mode: '0755'
+      with_fileglob:
+        - "{{mount_point}}/{{artifacts_path}}/*"
 
     - name: Unmount image
-      shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"
+      shell: "umount --force --verbose {{mount_point}}/{{ item }}"
       loop:
         - /dev/pts
         - /dev
