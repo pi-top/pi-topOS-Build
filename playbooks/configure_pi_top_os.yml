@@ -195,6 +195,9 @@
         state: directory
         recurse: true
 
+    - name: Set plymouth theme to 'pt-os-bootsplash'
+      shell: plymouth-set-default-theme -R pt-os-bootsplash
+
 ############
 # Clean up #
 ############
