@@ -54,7 +54,7 @@
         regexp: "{{ item.placeholder }}"
         replace: "{{ item.replace }}"
       with_items:
-      - { placeholder: 'BUILD_ID', replace: '{{ build_id }}'}
+      - { placeholder: 'BUILD_ID_TAG', replace: '{{ build_id }}'}
       - { placeholder: 'BUILD_REPO_URL', replace: 'https://github.com/pi-top/pi-topOS-ansible-playbook'}
       - { placeholder: 'BUILD_REPO_COMMIT', replace: '{{ build_repo_commit }}'}
       - { placeholder: 'BUILD_ACTION_URL', replace: '{{ build_action_url }}'}
