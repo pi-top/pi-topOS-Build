@@ -198,6 +198,7 @@
     - name: Set plymouth theme to 'pt-os-bootsplash'
       shell: plymouth-set-default-theme -R pt-os-bootsplash
 
+    # openbox configuration is modified to prevent key-presses in openbox-session during onboarding
     - name: Configure openbox environment
       shell: |
         mkdir -p /home/pi/.config/openbox
@@ -321,3 +322,14 @@
     - name: Update system time
       shell: "date -u '+%Y-%m-%d %H:%M:%S' > /etc/fake-hwclock.data"
       # shell: '/sbin/fake-hwclock save force'
+
+
+    # Fix permissions since ansible runs chroot as root, so we have to clean up
+    - name: Fix ownership and permissions of /home/pi
+      file:
+        path: /home/pi/
+        state: directory
+        recurse: yes
+        owner: pi
+        group: pi
+        mode: '0755'
