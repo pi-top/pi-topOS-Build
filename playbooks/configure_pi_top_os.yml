@@ -205,6 +205,9 @@
         keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
         sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
 
+    - name: Use common as default autorandr configuration
+      shell: sed -i "s|/usr/bin/autorandr -c --default default|/usr/bin/autorandr -c --default common|1" /etc/xdg/autostart/autorandr.desktop
+
 ############
 # Clean up #
 ############
