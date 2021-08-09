@@ -41,7 +41,7 @@
         - /dev
         - /proc
         - /sys
+        - /boot/recovery
         - /boot
-        - /recovery
         - # Not a typo - needed to unmount the root
       ignore_errors: true

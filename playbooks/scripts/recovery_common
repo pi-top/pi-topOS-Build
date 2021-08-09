@@ -19,7 +19,7 @@ ID_BOOT="p5"
 ID_ROOTFS="p6"
 
 # Directory on rootfs for the recovery partition
-RECOVERY_PARTITION_MOUNT_POINT="/recovery"
+RECOVERY_PARTITION_MOUNT_POINT="/boot/recovery"
 
 
 function detach_lo_device_for_image_file {

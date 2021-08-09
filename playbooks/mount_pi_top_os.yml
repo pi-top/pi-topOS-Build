@@ -126,7 +126,7 @@
     - name: Mount recovery
       become: true
       mount:
-        path: "{{ mount_point }}/recovery"
+        path: "{{ mount_point }}/boot/recovery"
         src: "PARTUUID={{ recovery.partuuid }}"
         fstype: "{{ recovery.fstype }}"
         fstab: /tmp/pi-top-fstab

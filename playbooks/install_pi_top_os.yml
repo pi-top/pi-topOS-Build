@@ -67,12 +67,12 @@
       unarchive:
         remote_src: yes
         src: /tmp/recovery.zip
-        dest: /recovery
+        dest: /boot/recovery
 
     - name: Copy autoboot.txt
       copy:
         src: files/autoboot.txt
-        dest: /recovery/autoboot.txt
+        dest: /boot/recovery/autoboot.txt
         mode: '0755'
 
     # SWITCHED OFF FOR FASTER BUILDS

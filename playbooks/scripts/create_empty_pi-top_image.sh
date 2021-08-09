@@ -64,7 +64,7 @@ ID_ROOTFS="p6"
 
 SECTOR_SIZE=512
 
-# Set size of /recovery to 128MB
+# Set size of /boot/recovery to 128MB
 size_of_recovery=$((1024 * 1024 * 128))
 
 # Set size of /boot to 256MB
@@ -200,8 +200,8 @@ echo "=== Mounting new image ==="
 mkdir -p "${pi_top_dir}"
 mount -v "${new_loop_device}${ID_ROOTFS}" "${pi_top_dir}" -t ext4
 
-mkdir -p "${pi_top_dir}/recovery"
-mount -v "${new_loop_device}${ID_RECOVERY}" "${pi_top_dir}/recovery" -t vfat
+mkdir -p "${pi_top_dir}/boot/recovery"
+mount -v "${new_loop_device}${ID_RECOVERY}" "${pi_top_dir}/boot/recovery" -t vfat
 
 mkdir -p "${pi_top_dir}/boot"
 mount -v "${new_loop_device}${ID_BOOT}" "${pi_top_dir}/boot" -t vfat
@@ -237,7 +237,7 @@ cat <<EOF >"${pi_top_dir}/etc/fstab"
 proc            /proc           proc    defaults          0       0
 PARTUUID=${BOOT_PARTUUID}  /boot           vfat    defaults          0       2
 PARTUUID=${ROOT_PARTUUID}  /               ext4    defaults,noatime  0       1
-# PARTUUID=${RECOVERY_PARTUUID}  /recovery  vfat  defaults  0  2
+PARTUUID=${RECOVERY_PARTUUID}  /boot/boot/recovery  vfat  defaults  0  2
 EOF
 
 echo "New /etc/fstab :"
