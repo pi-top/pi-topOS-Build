@@ -198,6 +198,13 @@
     - name: Set plymouth theme to 'pt-os-bootsplash'
       shell: plymouth-set-default-theme -R pt-os-bootsplash
 
+    - name: Configure openbox environment
+      shell: |
+        mkdir -p /home/pi/.config/openbox
+        cp /etc/xdg/openbox/rc.xml /home/pi/.config/openbox/rc.xml
+        keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
+        sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
+
 ############
 # Clean up #
 ############
