@@ -6,7 +6,7 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
-    build_commit: unknown
+    build_repo_commit: unknown
     build_number: 0
     is_64_bit: false
 
@@ -40,7 +40,7 @@
       - { placeholder: 'IMG_NAME', replace: 'pi-topOS'}
       - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
       - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
-      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
+      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_repo_commit }}'}
 
 ##############
 # config.txt #

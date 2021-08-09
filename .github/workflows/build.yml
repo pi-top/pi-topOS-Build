@@ -63,7 +63,7 @@ jobs:
           echo "==> Running configure_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars distro_name=${{ github.event.inputs.REPO_NAME || 'bullseye' }} \
                      --extra-vars build_number=${GITHUB_RUN_NUMBER} \
-                     --extra-vars build_commit=$(git rev-parse HEAD)\
+                     --extra-vars build_repo_commit="$(git rev-parse HEAD)" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
