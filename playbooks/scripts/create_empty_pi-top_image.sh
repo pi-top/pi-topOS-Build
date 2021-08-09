@@ -70,8 +70,8 @@ size_of_recovery=$((1024 * 1024 * 128))
 # Set size of /boot to 256MB
 size_of_boot=$((1024 * 1024 * 256))
 
-# Set rootfs to 20GB to avoid running out of space during an update
-size_of_rootfs=$((1024 * 1024 * 1024 * 20))
+# Set rootfs to 13GB to avoid running out of space during an update
+size_of_rootfs=$((1024 * 1024 * 1024 * 13))
 
 echo "size_of_recovery ${size_of_recovery} bytes"
 echo "size_of_boot ${size_of_boot} bytes"
@@ -237,7 +237,7 @@ cat <<EOF >"${pi_top_dir}/etc/fstab"
 proc            /proc           proc    defaults          0       0
 PARTUUID=${BOOT_PARTUUID}  /boot           vfat    defaults          0       2
 PARTUUID=${ROOT_PARTUUID}  /               ext4    defaults,noatime  0       1
-PARTUUID=${RECOVERY_PARTUUID}  /recovery  vfat  defaults  0  2
+# PARTUUID=${RECOVERY_PARTUUID}  /recovery  vfat  defaults  0  2
 EOF
 
 echo "New /etc/fstab :"
