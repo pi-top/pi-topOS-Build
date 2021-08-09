@@ -14,14 +14,14 @@
     image_name: 2021-06-18-raspios-bullseye-armhf
 
   tasks:
-        #    - name: Upgrade Raspberry Pi OS
-        #      apt:
-        #        state: latest
-        #        update_cache: true
-        #        install_recommends: true
-        #      register: apt_status
-        #      retries: 5
-        #      until: apt_status is success
+    # - name: Upgrade Raspberry Pi OS
+    #   apt:
+    #     state: latest
+    #     update_cache: true
+    #     install_recommends: true
+    #   register: apt_status
+    #   retries: 5
+    #   until: apt_status is success
 
     - name: Add pi-top Apt key
       apt_key:
@@ -46,6 +46,9 @@
       retries: 5
       until: apt_status is success
 
+#########################
+# Recovery installation #
+#########################
     # TODO: handle installing recovery from GitHub zip
     #     move to separate playbook/script? create-empty-pi-top-image.sh?
     #     seems better to handle at the point where the partition is being created!
@@ -66,7 +69,14 @@
         src: /tmp/recovery.zip
         dest: /recovery
 
+    - name: Copy autoboot.txt
+      copy:
+        src: files/autoboot.txt
+        dest: /recovery/autoboot.txt
+        mode: '0755'
+
     # SWITCHED OFF FOR FASTER BUILDS
+    # TODO: move to a new stage
     #
     # - name: Update all packages to the latest version
     #   apt:

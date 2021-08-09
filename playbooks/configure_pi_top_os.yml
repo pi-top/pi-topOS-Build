@@ -15,17 +15,17 @@
     password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
 
   tasks:
+############
+# Password #
+############
     - name: Set pi user password
       user:
         name: pi
         password: "{{ password }}"
 
-    - name: Copy autoboot.txt
-      copy:
-        src: files/autoboot.txt
-        dest: /recovery/autoboot.txt
-        mode: '0755'
-
+##############
+# Build Info #
+##############
     - name: Copy issue file template
       copy:
         src: files/pt-issue
@@ -42,6 +42,9 @@
       - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
       - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_commit }}'}
 
+##############
+# config.txt #
+##############
     - name: Copy boot config.txt
       copy:
         src: files/config.txt
@@ -54,6 +57,9 @@
         dest: /boot/config.txt.orig
         mode: '0755'
 
+########
+# MOTD #
+########
     - name: Remove 10-uname
       file:
         dest: /etc/update-motd.d/10-uname
@@ -65,6 +71,9 @@
         dest: /etc/update-motd.d/10-pt-motd
         mode: '0755'
 
+##################
+# System Patches #
+##################
     - name: Apply patches
       patch:
         # TODO: Add -vvv
@@ -89,6 +98,9 @@
         - us-keyboard.diff
         - openbox-xdg-autostart-shebang.diff
 
+#########################
+# systemd/dbus services #
+#########################
     - name: Enable Onboarding (using symlink)
       shell: ln -sf /usr/lib/pt-web-portal/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
 
@@ -122,14 +134,8 @@
         dest: /etc/systemd/system/local-fs.target.wants/pt-sys-oled.service
         state: absent
 
-    - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
-      command: wifi-ap-sta enable
-
     - name: Disable ISC DHCP server (so that only pt-dhcp-server starts it)
       command: systemctl disable isc-dhcp-server
-
-    - name: Disable cursor until after expanding FS
-      command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
 
     - name: Enable VNC Server (using symlink)
       file:
@@ -137,6 +143,16 @@
         src: /usr/lib/systemd/system/vncserver-x11-serviced.service
         state: link
       when: not is_64_bit | bool
+
+#################
+# Configuration #
+#################
+    - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
+      command: wifi-ap-sta enable
+
+    - name: Disable cursor until after expanding FS
+      command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
+
 
     - name: Generate default locales
       locale_gen:
@@ -161,7 +177,9 @@
         state: directory
         recurse: true
 
-
+############
+# Clean up #
+############
     - name: Remove leftover raspi-ui-overrides directory
       file:
         dest: /usr/share/raspi-ui-overrides
@@ -221,20 +239,6 @@
           - thonny
           - wolfram-engine
 
-    - name: Fix ownership and permissions of /home/pi
-      file:
-        path: /home/pi/
-        state: directory
-        recurse: yes
-        owner: pi
-        group: pi
-        mode: '0755'
-
-    # Finalise image as pi-gen does in 'export-image/04-finalise/01-run.sh'
-    - name: Update system time
-      shell: "date -u '+%Y-%m-%d %H:%M:%S' > /etc/fake-hwclock.data"
-      # shell: '/sbin/fake-hwclock save force'
-
     - name: Cleanup files and folders
       file:
         path: "{{ item }}"
@@ -278,3 +282,11 @@
 
     - name: Consolidate duplicate files in /usr/share/doc
       shell: 'hardlink -t /usr/share/doc'
+
+############
+# Finalise #
+############
+    # Finalise image as pi-gen does in 'export-image/04-finalise/01-run.sh'
+    - name: Update system time
+      shell: "date -u '+%Y-%m-%d %H:%M:%S' > /etc/fake-hwclock.data"
+      # shell: '/sbin/fake-hwclock save force'
