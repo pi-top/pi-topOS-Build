@@ -87,6 +87,7 @@
         - source-etc-profile-in-etc-zsh-zprofile.diff
         - static-ip-on-usb-interface.diff
         - us-keyboard.diff
+        - openbox-xdg-autostart-shebang.diff
 
     - name: Enable Onboarding (using symlink)
       shell: ln -sf /usr/lib/pt-web-portal/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
