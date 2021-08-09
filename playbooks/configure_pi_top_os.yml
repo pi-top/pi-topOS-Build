@@ -6,8 +6,12 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
+    build_id_schema_version: 1
+    build_repo_name: "experimental-pkgcld"
     build_repo_commit: unknown
     build_number: 0
+    build_action_url: unknown
+
     is_64_bit: false
 
     # Created with :
@@ -28,19 +32,32 @@
 ##############
     - name: Copy issue file template
       copy:
-        src: files/pt-issue
-        dest: /etc/pt-issue
+        src: files/pt-issue.txt
+        dest: /boot/pt-issue.txt
 
-    - name: Replace placeholders in pt-issue
+    #######################################################
+    # See 'docs/BUILD_ID_SCHEMA.txt' for more information #
+    #######################################################
+
+    - name: Extract pi-topOS version from pt-os version file for build ID
+      slurp:
+        src: /etc/pi-top_os_version
+      register: orig_pt_os_ver
+
+    - name: Generate build ID
+      set_fact:
+        build_id: "S{{ build_id_schema_version }}_B{{ build_repo_name }}_D{{ ansible_date_time.date }}_P{{ orig_pt_os_ver }}_#{{ build_repo_commit }}_R{{ build_number }}"
+
+    - name: Replace build info placeholders in /boot/pt-issue.txt
       replace:
-        path: /etc/pt-issue
+        path: /boot/pt-issue.txt
         regexp: "{{ item.placeholder }}"
         replace: "{{ item.replace }}"
       with_items:
-      - { placeholder: 'IMG_NAME', replace: 'pi-topOS'}
-      - { placeholder: 'BUILD_NUMBER', replace: '{{ build_number }}'}
-      - { placeholder: 'IMG_DATE', replace: '{{ ansible_date_time.date }}'}
-      - { placeholder: 'BUILD_SYSTEM_COMMIT', replace: '{{ build_repo_commit }}'}
+      - { placeholder: 'BUILD_ID', replace: '{{ build_id }}'}
+      - { placeholder: 'BUILD_REPO_URL', replace: 'https://github.com/pi-top/pi-topOS-ansible-playbook'}
+      - { placeholder: 'BUILD_REPO_COMMIT', replace: '{{ build_repo_commit }}'}
+      - { placeholder: 'BUILD_ACTION_URL', replace: '{{ build_action_url }}'}
 
 ##############
 # config.txt #

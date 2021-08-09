@@ -64,6 +64,8 @@ jobs:
           ${ANSIBLE} --extra-vars distro_name=${{ github.event.inputs.REPO_NAME || 'bullseye' }} \
                      --extra-vars build_number=${GITHUB_RUN_NUMBER} \
                      --extra-vars build_repo_commit="$(git rev-parse HEAD)" \
+                     --extra-vars build_action_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                     --extra-vars build_repo_name="experimental-pkgcld" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
