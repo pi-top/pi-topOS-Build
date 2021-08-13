@@ -250,13 +250,13 @@
           - nodered
           - openjdk-11-jre
           - openjdk-11-jre-headless  # ~400MB w/ dependent packages
-          - piwiz
+#          - piwiz
           - pprompt
           - python-games
           - python3-thonny
           - python3-thonny-pi
           - qpdfview
-          - raspberrypi-ui-mods
+#          - raspberrypi-ui-mods
           - scratch
           - scratch2
           - thonny
