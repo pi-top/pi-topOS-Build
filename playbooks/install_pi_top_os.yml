@@ -14,14 +14,14 @@
     image_name: 2021-06-18-raspios-bullseye-armhf
 
   tasks:
-    # - name: Upgrade Raspberry Pi OS
-    #   apt:
-    #     state: latest
-    #     update_cache: true
-    #     install_recommends: true
-    #   register: apt_status
-    #   retries: 5
-    #   until: apt_status is success
+    - name: Upgrade Raspberry Pi OS
+      apt:
+        state: latest
+        update_cache: true
+        install_recommends: true
+      register: apt_status
+      retries: 5
+      until: apt_status is success
 
     - name: Add pi-top Apt key
       apt_key:
@@ -75,13 +75,11 @@
         dest: /recovery/autoboot.txt
         mode: '0755'
 
-    # SWITCHED OFF FOR FASTER BUILDS
     # TODO: move to a new stage
-    #
-    # - name: Update all packages to the latest version
-    #   apt:
-    #     upgrade: dist
-    #     update_cache: true
-    #   register: apt_status
-    #   retries: 5
-    #   until: apt_status is success
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+        update_cache: true
+      register: apt_status
+      retries: 5
+      until: apt_status is success
