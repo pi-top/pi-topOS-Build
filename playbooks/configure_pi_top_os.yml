@@ -99,11 +99,9 @@
         strip: 1
       loop:
         - add-post–boot-blinking-cursor.diff
-        - configure-dhcp-lease-range.diff
         - locale-us.diff
         - volume-max.diff
         - dpms-timeout-5mins.diff
-        - dhcp-server-on-usb-interface.diff
         - disable-openbox-session-right-click-menu.diff
         - dynamic-swap.diff
         - empty-etc-issue.diff
