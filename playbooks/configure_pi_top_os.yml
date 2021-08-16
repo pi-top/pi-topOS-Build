@@ -103,7 +103,6 @@
         - volume-max.diff
         - dpms-timeout-5mins.diff
         - disable-openbox-session-right-click-menu.diff
-        - dynamic-swap.diff
         - empty-etc-issue.diff
         - empty-etc-motd.diff
         - hostname.diff
