@@ -23,9 +23,14 @@
       retries: 5
       until: apt_status is success
 
-    - name: Add pi-top Apt key
+    - name: Add pi-top master apt key
       apt_key:
         data: "{{ lookup('file', 'pt-apt-pc.asc') }}"
+        state: present
+
+    - name: Add pi-top PackageCloud apt key
+      apt_key:
+        data: "{{ lookup('file', 'pt-apt.asc') }}"
         state: present
 
     - name: Add pi-top build repository
