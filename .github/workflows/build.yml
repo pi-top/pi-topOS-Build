@@ -23,6 +23,11 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
+      - uses: rokroskar/workflow-run-cleanup-action
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: TRUE
+
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v1.2.1
 
