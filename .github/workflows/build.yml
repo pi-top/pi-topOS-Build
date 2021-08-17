@@ -16,7 +16,6 @@ on:
         required: false
         default: "bullseye"
   schedule:
-    # Run daily at midnight
     - cron:  '0 0 * * *'
 
 jobs:
