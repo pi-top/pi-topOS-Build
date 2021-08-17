@@ -23,20 +23,15 @@
       retries: 5
       until: apt_status is success
 
-    - name: Add pi-top master apt key
-      apt_key:
-        data: "{{ lookup('file', 'pt-apt-pc.asc') }}"
-        state: present
+    - name: Install pi-topOS GPG key
+      apt:
+        name: pi-top-os-archive-keyring
+        state: latest
 
-    - name: Add pi-top PackageCloud apt key
-      apt_key:
-        data: "{{ lookup('file', 'pt-apt.asc') }}"
-        state: present
-
-    - name: Add pi-top build repository
+    - name: Add pi-topOS apt repository
       apt_repository:
-        repo: "deb https://packagecloud.io/pi-top/{{ repo_name }}/debian/ {{ distro_name }} main"
-        filename: "pi-top"
+        repo: "deb [signed-by=/usr/share/keyrings/pi-top-os-archive-keyring.asc] https://pkg.pi-top.com/{{ repo_name }}/debian/ {{ distro_name }} main"
+        filename: "pi-top-os"
         update_cache: true
 
     - name: Install pt-os
@@ -54,7 +49,7 @@
 #########################
 # Recovery installation #
 #########################
-    # TODO: handle installing recovery from GitHub zip
+    # TODO:
     #     move to separate playbook/script? create-empty-pi-top-image.sh?
     #     seems better to handle at the point where the partition is being created!
     - name: Get information about recovery releases
