@@ -5,6 +5,11 @@
 # recovery/bootloader partition
 ##############################################################################
 
+RECOVERY_MB=${1:-128}
+BOOT_MB=${2:-256}
+# Avoid running out of space during an update
+ROOTFS_GB=${3:-13}
+
 # High level flow
 # 1. Create empty image
 # 2. Calculate file system offsets
@@ -64,14 +69,9 @@ ID_ROOTFS="p6"
 
 SECTOR_SIZE=512
 
-# Set size of /recovery to 128MB
-size_of_recovery=$((1024 * 1024 * 128))
-
-# Set size of /boot to 256MB
-size_of_boot=$((1024 * 1024 * 256))
-
-# Set rootfs to 13GB to avoid running out of space during an update
-size_of_rootfs=$((1024 * 1024 * 1024 * 13))
+size_of_recovery=$((1024 * 1024 * "${RECOVERY_MB}"))
+size_of_boot=$((1024 * 1024 * "${BOOT_MB}"))
+size_of_rootfs=$((1024 * 1024 * 1024 * "${ROOTFS_GB}"))
 
 echo "size_of_recovery ${size_of_recovery} bytes"
 echo "size_of_boot ${size_of_boot} bytes"
