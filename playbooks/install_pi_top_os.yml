@@ -54,8 +54,12 @@
 #########################
 # Recovery installation #
 #########################
+    - name: Get the original device identifier (PARTUUID) from cmdline.txt
+      shell: "cat /tmp/pi-top-os/boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
+      register: device_identifier
+
     - name: Set recovery partition to automatically mount
-      shell: scripts/set_recovery_partition_to_automount.sh
+      shell: scripts/set_recovery_partition_to_automount.sh {{ device_identifier.stdout }}
 
     - name: Get information about recovery releases
       uri:
