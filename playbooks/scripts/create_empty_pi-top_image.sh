@@ -221,33 +221,11 @@ rsync --archive \
 set -x
 echo "=== Creating fstab and boot/cmdline.txt"
 
-# Partition numbers on image with bootloader
-PART_NUM_RECOVERY="01"
-# PART_NUM_EXTENDED="02"
 PART_NUM_BOOT="05"
 PART_NUM_ROOTFS="06"
 
 IMGID="$(dd if="${new_image_file}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
 
-RECOVERY_PARTUUID="${IMGID}-${PART_NUM_RECOVERY}"
-BOOT_PARTUUID="${IMGID}-${PART_NUM_BOOT}"
-ROOT_PARTUUID="${IMGID}-${PART_NUM_ROOTFS}"
-
-echo "Original /etc/fstab :"
-cat "${pi_top_dir}/etc/fstab"
-
-cat <<EOF >"${pi_top_dir}/etc/fstab"
-proc            /proc           proc    defaults          0       0
-PARTUUID=${BOOT_PARTUUID}  /boot           vfat    defaults          0       2
-PARTUUID=${ROOT_PARTUUID}  /               ext4    defaults,noatime  0       1
-PARTUUID=${RECOVERY_PARTUUID}  /recovery  vfat  defaults  0  2
-EOF
-
-echo "New /etc/fstab :"
-cat "${pi_top_dir}/etc/fstab"
-
-# Patch cmdline.txt with UUID
-sed -i "s/root=PARTUUID.* /root=PARTUUID=${ROOT_PARTUUID} /1" "${pi_top_dir}/boot/cmdline.txt"
-
-echo "New /boot/cmdline.txt :"
-cat "${pi_top_dir}/boot/cmdline.txt"
+sed -i "s/PARTUUID=.*-${PART_NUM_BOOT} /PARTUUID=${IMGID}-${PART_NUM_BOOT}/1" "${pi_top_dir}/etc/fstab"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOT} /PARTUUID=${ROOT_PARTUUID}/1" "${pi_top_dir}/etc/fstab"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOT} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/boot/cmdline.txt"
