@@ -160,6 +160,21 @@
     - name: Disable cursor until after expanding FS
       command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
 
+    # TODO: review if removing 'dwc_otg.lpm_enable=0' is needed in /boot/cmdline.txt
+
+    - name: Set up virtual Ethernet driver for pi-top [4] display port
+      command: |
+        sed -i '/ modules-load=dwc2,g_ether//d' /boot/cmdline.txt
+        sed -i 's/rootwait/rootwait modules-load=dwc2,g_ether/1' /boot/cmdline.txt
+
+    - name: Clean boot configuration
+      command: |
+        echo " logo.nologo" >> /boot/cmdline.txt
+        echo " vt.global_cursor_default=0" >> /boot/cmdline.txt
+        echo " loglevel=0" >> /boot/cmdline.txt
+        # Only needed for first boot - removed by web portal
+        echo " fbcon=map:2" >> /boot/cmdline.txt
+
 #########################
 # General system config #
 #########################

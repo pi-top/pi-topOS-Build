@@ -233,6 +233,9 @@ RECOVERY_PARTUUID="${IMGID}-${PART_NUM_RECOVERY}"
 BOOT_PARTUUID="${IMGID}-${PART_NUM_BOOT}"
 ROOT_PARTUUID="${IMGID}-${PART_NUM_ROOTFS}"
 
+echo "Original /etc/fstab :"
+cat "${pi_top_dir}/etc/fstab"
+
 cat <<EOF >"${pi_top_dir}/etc/fstab"
 proc            /proc           proc    defaults          0       0
 PARTUUID=${BOOT_PARTUUID}  /boot           vfat    defaults          0       2
@@ -243,7 +246,8 @@ EOF
 echo "New /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
 
-echo "dwc_otg.lpm_enable=0 console=tty1 root=PARTUUID=${ROOT_PARTUUID} rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether quiet splash plymouth.ignore-serial-consoles logo.nologo vt.global_cursor_default=0 loglevel=0 fbcon=map:2" >"${pi_top_dir}/boot/cmdline.txt"
+# Patch cmdline.txt with UUID
+sed -i "s/root=PARTUUID.* /root=PARTUUID=${ROOT_PARTUUID} /1" "${pi_top_dir}/boot/cmdline.txt"
 
 echo "New /boot/cmdline.txt :"
 cat "${pi_top_dir}/boot/cmdline.txt"
