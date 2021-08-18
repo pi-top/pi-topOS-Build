@@ -136,12 +136,12 @@
 
     - name: Disable Further Link for onboarding (using symlink)
       file:
-        dest: /etc/systemd/system/multi-user.target.wants/pt-further-link.service
+        dest: /etc/systemd/system/multi-user.target.wants/further-link.service
         state: absent
 
     - name: Disable OLED menu until onboarding finishes (using symlink)
       file:
-        dest: /etc/systemd/system/local-fs.target.wants/pt-sys-oled.service
+        dest: /etc/systemd/system/multi-user.target.wants/pt-miniscreen.service
         state: absent
 
     - name: Enable VNC Server (using symlink)
