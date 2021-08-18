@@ -59,7 +59,7 @@
       register: device_identifier
 
     - name: Set recovery partition to automatically mount
-      shell: scripts/set_recovery_partition_to_automount.sh {{ device_identifier.stdout }}
+      shell: scripts/set_recovery_partition_to_automount.sh {{ device_identifier.stdout }} /recovery
 
     - name: Get information about recovery releases
       uri:

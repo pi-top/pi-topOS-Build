@@ -7,10 +7,9 @@ set -euo pipefail
 IFS=$'\n\t'
 ###############################################################
 
-PART_NUM_RECOVERY="01"
-
-DISK_IDENTIFIER="${1}"
+RECOVERY_PARTUUID="${1}-01"
+MOUNT_TO="${2}"
 
 # Remove existing entries for recovery
-sed -i "s|PARTUUID=${DISK_IDENTIFIER}-${PART_NUM_RECOVERY}|d" /etc/fstab
-echo "PARTUUID=${DISK_IDENTIFIER}-${PART_NUM_RECOVERY}  /recovery  vfat  defaults  0  2" >>/etc/fstab
+sed -i "s|PARTUUID=${RECOVERY_PARTUUID}|d" /etc/fstab
+echo "PARTUUID=${RECOVERY_PARTUUID}  ${MOUNT_TO}  vfat  defaults  0  2" >>/etc/fstab
