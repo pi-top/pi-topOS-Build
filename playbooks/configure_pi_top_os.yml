@@ -169,11 +169,12 @@
 
     - name: Clean boot configuration
       command: |
-        echo " logo.nologo" >> /boot/cmdline.txt
-        echo " vt.global_cursor_default=0" >> /boot/cmdline.txt
-        echo " loglevel=0" >> /boot/cmdline.txt
-        # Only needed for first boot - removed by web portal
-        echo " fbcon=map:2" >> /boot/cmdline.txt
+        cmdline_txt_contents = $(cat /boot/cmdline.txt | tr '\n' '')
+        cmdline_txt_contents = "${cmdline_txt_contents} logo.nologo"
+        cmdline_txt_contents = "${cmdline_txt_contents} vt.global_cursor_default=0"
+        cmdline_txt_contents = "${cmdline_txt_contents} loglevel=0"
+        cmdline_txt_contents = "${cmdline_txt_contents} fbcon=map:2"
+        echo "${cmdline_txt_contents}" > /boot/cmdline.txt
 
 #########################
 # General system config #

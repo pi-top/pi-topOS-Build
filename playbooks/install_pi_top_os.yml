@@ -54,9 +54,9 @@
 #########################
 # Recovery installation #
 #########################
-    # TODO: handle installing recovery from GitHub zip
-    #     move to separate playbook/script? create-empty-pi-top-image.sh?
-    #     seems better to handle at the point where the partition is being created!
+    - name: Set recovery partition to automatically mount
+      shell: scripts/set_recovery_partition_to_automount.sh
+
     - name: Get information about recovery releases
       uri:
         url: https://api.github.com/repos/pi-top/pi-topOS-Recovery/releases/latest
