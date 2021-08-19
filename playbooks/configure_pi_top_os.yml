@@ -173,7 +173,7 @@
       - { original: 'rootwait', replace: 'rootwait modules-load=dwc2,g_ether'}
 
     - name: Clean boot configuration
-      command: |
+      shell: |
         cmdline_txt_contents = $(cat /boot/cmdline.txt | tr '\n' '')
         # Disable Raspberry Pi logo on boot screen
         cmdline_txt_contents = "${cmdline_txt_contents} logo.nologo"
