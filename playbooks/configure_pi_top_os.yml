@@ -168,9 +168,15 @@
     - name: Clean boot configuration
       command: |
         cmdline_txt_contents = $(cat /boot/cmdline.txt | tr '\n' '')
+        # Disable Raspberry Pi logo on boot screen
         cmdline_txt_contents = "${cmdline_txt_contents} logo.nologo"
+        # Remove blinking cursor
         cmdline_txt_contents = "${cmdline_txt_contents} vt.global_cursor_default=0"
+        # Disable error logging
         cmdline_txt_contents = "${cmdline_txt_contents} loglevel=0"
+        # Framebuffer console: map all TTYs to frame buffer 2
+        # Removes every boot message, logo, etc.
+        # Longer boot time? Browser takes longer? (https://badlywired.com/2017/09/recipe-for-a-raspberry-pi-kiosk/)
         cmdline_txt_contents = "${cmdline_txt_contents} fbcon=map:2"
         echo "${cmdline_txt_contents}" > /boot/cmdline.txt
 
