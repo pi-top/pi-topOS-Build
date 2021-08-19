@@ -52,15 +52,20 @@
 #########################
 # Recovery installation #
 #########################
-    - name: Get the original device identifier (PARTUUID prefix) from cmdline.txt
-      shell: "cat /tmp/pi-top-os/boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
-      register: device_identifier
+    - name: Get recovery partition PARTUUID from original device identifier in cmdline.txt
+      shell: "cat /tmp/pi-top-os/boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}' | awk '{print $1\"-01\"}'"
+      register: recovery_partuuid
+
+    - name: Remove previous recovery partition entries
+      lineinfile:
+        dest: /etc/fstab
+        state: absent
+        regexp: "PARTUUID={{ recovery_partuuid.stdout }}"
 
     - name: Set recovery partition to automatically mount to /recovery
-      shell: |
-        recovery_partuuid={{ device_identifier.stdout }}-01
-        sed -i "s|PARTUUID=${recovery_partuuid}|d" /etc/fstab
-        echo "PARTUUID=${recovery_partuuid}  {{ recovery_mount_to }}  vfat  defaults  0  2" >>/etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "PARTUUID={{ recovery_partuuid.stdout }}  {{ recovery_mount_to }}  vfat  defaults  0  2"
 
     - name: Get information about recovery releases
       uri:

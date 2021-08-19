@@ -158,12 +158,19 @@
       command: wifi-ap-sta enable
 
     - name: Disable cursor until after expanding FS
-      command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
+      replace:
+        path: /etc/lightdm/lightdm.conf
+        regexp: "#xserver-command=X"
+        replace: "xserver-command=X -nocursor"
 
     - name: Set up virtual Ethernet driver for pi-top [4] display port
-      command: |
-        sed -i '/ modules-load=dwc2,g_ether//d' /boot/cmdline.txt
-        sed -i 's/rootwait/rootwait modules-load=dwc2,g_ether/1' /boot/cmdline.txt
+      replace:
+        path: /boot/cmdline.txt
+        regexp: "{{ item.original }}"
+        replace: "{{ item.replace }}"
+      with_items:
+      - { original: ' modules-load=dwc2,g_ether', replace: ''}
+      - { original: 'rootwait', replace: 'rootwait modules-load=dwc2,g_ether'}
 
     - name: Clean boot configuration
       command: |
