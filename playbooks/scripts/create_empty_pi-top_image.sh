@@ -227,5 +227,5 @@ PART_NUM_ROOTFS="06"
 IMGID="$(dd if="${new_image_file}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
 
 sed -i "s/PARTUUID=.*-${PART_NUM_BOOT} /PARTUUID=${IMGID}-${PART_NUM_BOOT}/1" "${pi_top_dir}/etc/fstab"
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOT} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/etc/fstab"
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOT} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/boot/cmdline.txt"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/etc/fstab"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/boot/cmdline.txt"
