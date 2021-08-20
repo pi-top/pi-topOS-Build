@@ -232,3 +232,6 @@ cat "${pi_top_dir}/etc/fstab"
 sed -i "s/PARTUUID=.*-${PART_NUM_BOOT} /PARTUUID=${IMGID}-${PART_NUM_BOOT}/1" "${pi_top_dir}/etc/fstab"
 sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/etc/fstab"
 sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/boot/cmdline.txt"
+
+echo "New /etc/fstab :"
+cat "${pi_top_dir}/etc/fstab"
