@@ -229,6 +229,11 @@
         keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
         sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
 
+    # Ensure that directory exists before using
+    - file:
+        path: /lib/systemd/system/dphys-swapfile.service.d
+        state: directory
+
     - name: Run swap file generation in the background for faster startup
       copy:
         content: |
