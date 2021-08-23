@@ -157,12 +157,6 @@
     - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
       command: wifi-ap-sta enable
 
-    - name: Disable cursor until after expanding FS
-      replace:
-        path: /etc/lightdm/lightdm.conf
-        regexp: "#xserver-command=X"
-        replace: "xserver-command=X -nocursor"
-
     - name: Set up virtual Ethernet driver for pi-top [4] display port
       replace:
         path: /boot/cmdline.txt
@@ -195,6 +189,9 @@
 #########################
 # General system config #
 #########################
+    - name: Setup pt-os-init to run on first boot
+      shell: /sbin/pt-os-init prepare
+
     - name: Generate default locales
       locale_gen:
         name: "{{ item }}"
