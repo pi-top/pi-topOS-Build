@@ -61,7 +61,7 @@
         state: absent
         regexp: "PARTUUID={{ recovery_partuuid.stdout }}"
 
-    - name: Set recovery partition to automatically mount to /recovery
+    - name: Set recovery partition to automatically mount (to avoid seeing on desktop)
       lineinfile:
         path: /etc/fstab
         line: "PARTUUID={{ recovery_partuuid.stdout }}  {{ recovery_mount_to }}  vfat  defaults  0  2"
