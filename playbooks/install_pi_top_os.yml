@@ -9,7 +9,7 @@
     repo_name: experimental
     distro_name: bullseye
 
-    recovery_mount_to: /recovery
+    recovery_mount_to: /boot/.recovery
 
   tasks:
     - name: Upgrade Raspberry Pi OS
