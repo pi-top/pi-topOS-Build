@@ -157,9 +157,6 @@
     - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
       command: wifi-ap-sta enable
 
-    - name: Disable cursor until after expanding FS
-      command: sed -i "s/#xserver-command=X/xserver-command=X -nocursor/1" /etc/lightdm/lightdm.conf
-
 #########################
 # General system config #
 #########################
@@ -196,6 +193,11 @@
         cp /etc/xdg/openbox/rc.xml /home/pi/.config/openbox/rc.xml
         keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
         sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
+
+    # Ensure that directory exists before using
+    - file:
+        path: /lib/systemd/system/dphys-swapfile.service.d
+        state: directory
 
     - name: Run swap file generation in the background for faster startup
       copy:

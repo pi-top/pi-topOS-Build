@@ -243,7 +243,7 @@ EOF
 echo "New /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
 
-echo "dwc_otg.lpm_enable=0 console=tty1 root=PARTUUID=${ROOT_PARTUUID} rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether quiet splash plymouth.ignore-serial-consoles logo.nologo vt.global_cursor_default=0 loglevel=0 fbcon=map:2" >"${pi_top_dir}/boot/cmdline.txt"
+echo "dwc_otg.lpm_enable=0 console=tty1 root=PARTUUID=${ROOT_PARTUUID} rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait modules-load=dwc2,g_ether quiet init=/sbin/pt-os-init splash plymouth.ignore-serial-consoles logo.nologo vt.global_cursor_default=0 loglevel=0 fbcon=map:2" >"${pi_top_dir}/boot/cmdline.txt"
 
 echo "New /boot/cmdline.txt :"
 cat "${pi_top_dir}/boot/cmdline.txt"
