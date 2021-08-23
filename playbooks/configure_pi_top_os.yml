@@ -154,6 +154,13 @@
 ###################################
 # Onboarding setup: system config #
 ###################################
+    - name: Set Wi-Fi country to 00 to allow Wi-Fi AP mode to start
+      lineinfile:
+        path: /etc/wpa_supplicant/wpa_supplicant.conf
+        state: present
+        regexp: '^COUNTRY='
+        line: 'COUNTRY=00'
+
     - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
       command: wifi-ap-sta enable
 
