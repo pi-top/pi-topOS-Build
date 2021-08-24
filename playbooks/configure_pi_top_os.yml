@@ -117,10 +117,9 @@
 # Onboarding setup: systemd/dbus services #
 ###########################################
     - name: Disable notifications until onboarding is completed
-      copy:
-        src: /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service
-        remote_src: yes
-        dest: /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
+      shell: |
+        mkdir -p /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
+        mv /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
 
     - name: Enable Onboarding (using symlink)
       shell: ln -sf /usr/lib/pt-os-web-portal/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
