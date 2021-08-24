@@ -153,8 +153,11 @@
 ###################################
 # Onboarding setup: system config #
 ###################################
+    - name: Print hostname
+      shell: hostname
+
     - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
-      command: wifi-ap-sta enable
+      shell: wifi-ap-sta enable
 
     - name: Set up virtual Ethernet driver for pi-top [4] display port
       replace:
