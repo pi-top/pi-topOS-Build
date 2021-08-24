@@ -221,17 +221,22 @@ rsync --archive \
 set -x
 echo "=== Creating fstab and boot/cmdline.txt"
 
-PART_NUM_BOOT="05"
-PART_NUM_ROOTFS="06"
+# RPi OS
+PART_NUM_BOOT_ORIG="01"
+PART_NUM_ROOTFS_ORIG="02"
+# With recovery partition
+PART_NUM_BOOT_NEW="05"
+PART_NUM_ROOTFS_NEW="06"
 
 IMGID="$(dd if="${new_image_file}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
 
 echo "Old /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
 
-sed -i "s/PARTUUID=.*-${PART_NUM_BOOT} /PARTUUID=${IMGID}-${PART_NUM_BOOT}/1" "${pi_top_dir}/etc/fstab"
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/etc/fstab"
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS}/1" "${pi_top_dir}/boot/cmdline.txt"
+# Replace original partition IDs and UUID
+sed -i "s/PARTUUID=.*-${PART_NUM_BOOT_ORIG} /PARTUUID=${IMGID}-${PART_NUM_BOOT_NEW}/1" "${pi_top_dir}/etc/fstab"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW}/1" "${pi_top_dir}/etc/fstab"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW}/1" "${pi_top_dir}/boot/cmdline.txt"
 
 echo "New /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
