@@ -47,7 +47,7 @@ jobs:
           export TERM=xterm-color
           # chroot connection requires running as root
           # 'ansible-playbook' is not in root user's PATH
-          ANSIBLE="sudo $(which ansible-playbook) -i inventory -vvv"
+          ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
           echo "==> Running get_raspios playbook..."
           ${ANSIBLE} playbooks/get_raspios.yml

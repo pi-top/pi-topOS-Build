@@ -8,10 +8,8 @@
   vars:
     repo_name: experimental
     distro_name: bullseye
-    # TODO: these vars should be received from previous steps
-    image_folder: ./
-    # image_name: 2021-05-07-raspios-buster-armhf-full
-    image_name: 2021-06-18-raspios-bullseye-armhf
+
+    recovery_mount_to: /boot/.recovery
 
   tasks:
     - name: Upgrade Raspberry Pi OS
@@ -46,7 +44,6 @@
         state: latest
         install_recommends: true
         default_release: "{{ distro_name }}"
-
       register: apt_status
       retries: 5
       until: apt_status is success
@@ -54,9 +51,21 @@
 #########################
 # Recovery installation #
 #########################
-    # TODO: handle installing recovery from GitHub zip
-    #     move to separate playbook/script? create-empty-pi-top-image.sh?
-    #     seems better to handle at the point where the partition is being created!
+    - name: Get recovery partition PARTUUID from original device identifier in cmdline.txt
+      shell: cat /boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3"-01"}'
+      register: recovery_partuuid
+
+    - name: Remove previous recovery partition entries
+      lineinfile:
+        dest: /etc/fstab
+        state: absent
+        regexp: "PARTUUID={{ recovery_partuuid.stdout }}"
+
+    - name: Set recovery partition to automatically mount (to avoid seeing on desktop)
+      lineinfile:
+        path: /etc/fstab
+        line: "PARTUUID={{ recovery_partuuid.stdout }}  {{ recovery_mount_to }}  vfat  defaults  0  2"
+
     - name: Get information about recovery releases
       uri:
         url: https://api.github.com/repos/pi-top/pi-topOS-Recovery/releases/latest
