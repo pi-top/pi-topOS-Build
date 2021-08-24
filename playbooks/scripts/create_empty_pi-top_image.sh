@@ -234,9 +234,16 @@ echo "Old /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
 
 # Replace original partition IDs and UUID
-sed -i "s/PARTUUID=.*-${PART_NUM_BOOT_ORIG} /PARTUUID=${IMGID}-${PART_NUM_BOOT_NEW}/1" "${pi_top_dir}/etc/fstab"
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW}/1" "${pi_top_dir}/etc/fstab"
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW}/1" "${pi_top_dir}/boot/cmdline.txt"
+sed -i "s/PARTUUID=.*-${PART_NUM_BOOT_ORIG} /PARTUUID=${IMGID}-${PART_NUM_BOOT_NEW} /1" "${pi_top_dir}/etc/fstab"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW} /1" "${pi_top_dir}/etc/fstab"
 
 echo "New /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
+
+echo "Old /boot/cmdline.txt :"
+cat "${pi_top_dir}/boot/cmdline.txt"
+
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW} /1" "${pi_top_dir}/boot/cmdline.txt"
+
+echo "New /boot/cmdline.txt :"
+cat "${pi_top_dir}/boot/cmdline.txt"
