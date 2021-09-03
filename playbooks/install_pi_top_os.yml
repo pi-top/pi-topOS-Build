@@ -23,12 +23,12 @@
 
     - name: Add pi-top master apt key
       apt_key:
-        data: "{{ lookup('file', 'pt-apt-pc.asc') }}"
+        data: "{{ lookup('file', 'pt-apt.asc') }}"
         state: present
 
     - name: Add pi-top PackageCloud apt key
       apt_key:
-        data: "{{ lookup('file', 'pt-apt.asc') }}"
+        url: "https://packagecloud.io/pi-top/{{ repo_name }}/gpgkey"
         state: present
 
     - name: Add pi-top build repository
