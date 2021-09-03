@@ -9,9 +9,8 @@ IFS=$'\n\t'
 
 set -x
 
-IMG_NAME="${1}"
-BUILD_NUMBER="${2}"
-ARTIFACTS_PATH="${3:-/tmp/artifacts}"
+ARTIFACTS_PREFIX="${1}"
+ARTIFACTS_PATH="${2:-/tmp/artifacts}"
 
 echo "Getting list of installed pi-top packages..."
 installed_pi_top_packages=($(aptitude search "?origin (pi-top) ?installed" -F %p))
@@ -21,8 +20,10 @@ generate_package_list() {
   for p in ${installed_pi_top_packages[@]}; do
     echo "${p}"
     deps=($(apt-cache depends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances ${p} | tail -n +2 | awk '{print $2}' | sort -u))
-    # deps=($(apt-cache depends --recurse --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances ${p} | tail | grep "^\w" | sort -u))
     for d in ${deps[@]}; do
+      d="${d//</}"
+      d="${d//>/}"
+
       echo -e "\t${d}...\c"
       if ! echo ${installed_pi_top_packages[@]} | grep -q -w "${d}"; then
         if ! echo ${packages_to_use[@]} | grep -q -w "${d}"; then
@@ -66,8 +67,8 @@ sudo sed -i "/${prefix_text}\$/,\$d" /etc/debtree/skiplist
 # Apply new package list
 update_debtree_file "${prefix_text}" /etc/debtree/skiplist
 
-debtree --show-installed pt-os | dot -T png >"${ARTIFACTS_PATH}/${IMG_NAME}_c${BUILD_NUMBER}-deps-os-pt.png"
+debtree --show-installed pt-os | dot -T png >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}-deps-os-pt.png"
 
-tree --charset=ascii /etc/systemd/system >"${ARTIFACTS_PATH}/${IMG_NAME}_c${BUILD_NUMBER}-systemd-tree.txt"
+tree --charset=ascii /etc/systemd/system >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}-systemd-tree.txt"
 
 exit 0

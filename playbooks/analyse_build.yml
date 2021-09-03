@@ -22,7 +22,7 @@
         dest: /tmp/analyse-build.sh
 
     - name: Run debtree script
-      shell: '/bin/bash /tmp/analyse-build.sh {{image_name}} {{build_number}} {{artifacts_path}}'
+      shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
 
 - hosts: localhost
   connection: chroot
