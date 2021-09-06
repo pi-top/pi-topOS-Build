@@ -1,0 +1,10 @@
+Index: /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
+===================================================================
+--- /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
++++ /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
+@@ -1,4 +1,4 @@
+-#!/usr/bin/python2
++#!/usr/bin/python3
+
+ # openbox-xdg-autostart runs things based on the XDG autostart specification
+ # Copyright (C) 2008       Dana Jansens

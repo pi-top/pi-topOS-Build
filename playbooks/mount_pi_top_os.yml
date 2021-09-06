@@ -103,7 +103,6 @@
         state: directory
         recurse: true
 
-
     - name: Mount rootfs
       become: true
       mount:

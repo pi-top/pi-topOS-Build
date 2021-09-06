@@ -1,0 +1,52 @@
+- hosts: localhost
+  become_method: sudo
+  gather_facts: true
+
+  vars:
+    is_64_bit: false
+    image_folder: ./
+    image_name: 2021-06-18-raspios-bullseye-armhf
+    raspi_os_url: https://storage.googleapis.com/pt-os-builds/raspios/2021-06-18-raspios-bullseye-armhf.zip
+  tasks:
+
+    - name: Check if we have it locally
+      stat:
+        path: "{{ image_folder }}/{{ image_name }}.zip"
+      register: image_exists
+      when: not is_64_bit | bool
+
+    # - set_fact:
+    #     image_name: 2020-05-27-raspios-buster-arm64
+    #     raspi_os_latest: "{{ image_name }}"
+    #     raspi_os_url: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2020-05-28/2020-05-27-raspios-buster-arm64.zip
+    #   when: is_64_bit | bool
+
+    - set_fact:
+        raspi_os_latest: "{{ image_name }}"
+
+    # - name: Check what the latest Raspberry Pi OS image is
+    #   uri:
+    #     url: "{{ raspi_os_url }}"
+    #     follow_redirects: none
+    #     status_code: [302]
+    #     validate_certs: False
+    #   register: raspi_os_latest_redirect
+    #   when: not is_64_bit | bool or image_exists.stat.exists == False
+
+    # - set_fact:
+        # raspi_os_latest: "{{ raspi_os_latest_redirect.location | basename }}"
+      # when: not is_64_bit | bool or image_exists.stat.exists == False
+
+    - name: Check if we have it locally
+      stat:
+        path: "{{ image_folder }}/{{ raspi_os_latest }}"
+      register: stat_result
+      when: image_exists.stat.exists == False
+
+    - name: Download latest image
+      get_url:
+        url: "{{ raspi_os_url }}"
+        force: false
+        dest: "{{ image_folder }}"
+      when: image_exists.stat.exists == False or 
+            stat_result.stat is not undefined and stat_result.stat.exists == False

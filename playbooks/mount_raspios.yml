@@ -3,85 +3,35 @@
   gather_facts: true
 
   vars:
-    is_64_bit: false
     image_folder: ./
-    image_name: 2021-05-07-raspios-buster-armhf-full
+    # image_name: 2021-05-07-raspios-buster-armhf-full
+    image_name: 2021-06-18-raspios-bullseye-armhf
     mount_point: /tmp/raspi-os
-    raspi_os_url: https://downloads.raspberrypi.org/raspios_full_armhf_latest
   tasks:
-
-    - set_fact:
-        image_name: 2020-05-27-raspios-buster-arm64
-        raspi_os_latest: "{{ image_name }}"
-        raspi_os_url: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2020-05-28/2020-05-27-raspios-buster-arm64.zip
-      when: is_64_bit | bool
 
     - set_fact:
         image_path: "{{ image_folder }}{{ image_name }}.img"
 
-    - assert:
-        that: "{{ ansible_version.full is version('2.8.0', '>=') }}"
-        fail_msg: "Ansible version must be greater than 2.8.0"
-        success_msg: "Ansible is newer than 2.8.0"
-
-    - name: Check zerofree is installed
-      shell: command -v zerofree
-
-    - name: Check unzip is installed
-      shell: command -v unzip
-
-    # - name: Check qemu is > 4
-    #   shell: qemu-system-x86_64 --version | head -n 1 | cut -d' ' -f 4
-    #   register: qemu_version
-    #   when: ansible_architecture == 'x86_64'
-
-    # - assert:
-    #     that: "{{ qemu_version.stdout is version('4.0.0', '>=') }}"
-    #     fail_msg: qemu must be greater than version 4 a lot of weird errors/bugs are related to qemu version, because low level system calls fail
-    #     success_msg: qemu is greater than 4.0.0
-    #   when: ansible_architecture == 'x86_64'
-
-    - name: Check what the latest Raspberry Pi OS image is
-      uri:
-        url: "{{ raspi_os_url }}"
-        follow_redirects: none
-        status_code: [302]
-        validate_certs: False
-      register: raspi_os_latest_redirect
-      when: not is_64_bit | bool
-
-    - set_fact:
-        raspi_os_latest: "{{ raspi_os_latest_redirect.location | basename }}"
-      when: not is_64_bit | bool
-
-    - name: Check if we have it locally
-      stat:
-        path: "{{ image_folder }}{{ raspi_os_latest }}"
-      register: stat_result
-
-    - name: Download the image
-      get_url:
-        url: "{{ raspi_os_url }}"
-        force: false
-        dest: "{{ image_folder }}"
-      when: stat_result.stat.exists == False
-
-    - name: Unzip the os image
+    - name: Unzip OS image
       unarchive:
-        src: "{{ image_folder }}{{ image_name }}.zip"
+        src: "{{ image_folder }}/{{ image_name }}.zip"
         dest: "{{ image_folder }}"
         creates: "{{ image_path }}"
 
-    - name: List the loop devices associated with image
+    - name: List the loop device(s) associated with image
       command: "losetup --output=NAME --associated {{image_path}}"
       register: loop_device_check
 
-    - name: Mount all the partitions to loop devices
+    - name: Create a new loopback device
+      command: "losetup -f"
+      become: true
+
+    - name: If none, mount all the partitions to a loop device
       command: "partx --add --verbose {{image_path}}"
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
 
-    - name: List the loop devices associated with image
+    - name: List the loop device(s) associated with image
       command: "losetup --output=NAME --associated {{image_path}}"
       register: loop_devices
 

@@ -8,7 +8,7 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
-    output_directory: output-files
+    output_directory: artifacts
 
   tasks:
 
@@ -36,9 +36,9 @@
         rootfs_device: "{{ rootfs_lo_device.stdout }}"
         pt_image_device: "{{ rootfs_lo_device.stdout[:-2] }}"
 
-    - name: Get the original PARTUUID
-      shell: "cat /tmp/pi-top-os/boot/cmdline.txt | awk -F'[= -]' '{print $7}'"
-      register: partuuid_original
+    - name: Get the original device identifier (PARTUUID) from cmdline.txt
+      shell: "cat /tmp/pi-top-os/boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
+      register: device_identifier
 
     - name: Unmount
       # Although umount can be called with recurse it fails, the mount point need to be unmounted in order
@@ -91,7 +91,7 @@
       shell: sync
 
     - name: Restore PARTUUID
-      shell: scripts/set_partuuid_on_device.sh {{ pt_image_device }} {{ partuuid_original.stdout }}
+      shell: scripts/set_partuuid_on_device.sh {{ pt_image_device }} {{ device_identifier.stdout }}
       ignore_errors: true
 
     - name: Unmount image, shouldn't be required
@@ -104,7 +104,7 @@
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
     - set_fact:
-        output_image_filename: "{{ ansible_date_time.date }}-pi-topOS-sirius.img"
+        output_image_filename: "{{ ansible_date_time.date }}-pi-topOS.img"
 
     - name: Create a hard link to the image to use as the output filename
       file:
@@ -113,7 +113,7 @@
         state: hard
 
     - set_fact:
-        zip_filename: "pi-topOS-sirius_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.zip"
+        zip_filename: "pi-topOS_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.zip"
 
     - name: Compress image into zip
       archive:

@@ -1,0 +1,47 @@
+- import_playbook: mount_pi_top_os.yml
+
+- hosts: pi_top_os:192.168.*:!localhost
+  gather_facts: true
+  become: true
+  vars:
+    image_name: "pi-topOS"
+    mount_point: /tmp/pi-top-os
+    artifacts_path: /tmp/artifacts
+
+  # Dependencies are now installed as part of the core OS via 'pt-dev':
+  #     - debtree
+  #     - graphviz
+  #     - tree
+  # This is because if this stage is run after image has been shrunk, there is not enough
+  # space to install the dependencies and store the artifacts
+
+  tasks:
+    - name: Copy debtree script to remote
+      copy:
+        src: scripts/analyse-build.sh
+        dest: /tmp/analyse-build.sh
+
+    - name: Run debtree script
+      shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
+
+- hosts: localhost
+  connection: chroot
+  tasks:
+    - name: Copy OS metadata files
+        src: "{{ item }}"
+        dest: artifacts/
+        mode: '0755'
+      with_fileglob:
+        - "{{mount_point}}/{{artifacts_path}}/*"
+
+    - name: Unmount image
+      shell: "umount --force --verbose {{mount_point}}/{{ item }}"
+      loop:
+        - /dev/pts
+        - /dev
+        - /proc
+        - /sys
+        - /boot
+        - /recovery
+        - # Not a typo - needed to unmount the root
+      ignore_errors: true

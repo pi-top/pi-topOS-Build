@@ -1,0 +1,366 @@
+- import_playbook: mount_pi_top_os.yml
+
+- hosts: pi_top_os:192.168.*:!localhost
+  gather_facts: true
+  environment:
+    # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
+  vars:
+    build_id_schema_version: 1
+    build_repo_name: "experimental-pkgcld"
+    build_repo_commit: unknown
+    build_number: 0
+    build_action_url: unknown
+
+    is_64_bit: false
+
+    # Created with :
+    # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
+    password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
+
+  tasks:
+############
+# Password #
+############
+    - name: Set pi user password
+      user:
+        name: pi
+        password: "{{ password }}"
+
+##############
+# Build Info #
+##############
+    - name: Copy issue file template
+      copy:
+        src: files/pt-issue.txt
+        dest: /boot/pt-issue.txt
+
+    #######################################################
+    # See 'docs/BUILD_ID_SCHEMA.txt' for more information #
+    #######################################################
+
+    - name: Extract pi-topOS version from pt-os version file for build ID
+      slurp:
+        src: /etc/pi-top_os_version
+      register: orig_pt_os_ver
+
+    - name: Generate build ID
+      set_fact:
+        build_id: "S{{ build_id_schema_version }}_B{{ build_repo_name }}_D{{ ansible_date_time.date }}_P{{ orig_pt_os_ver['content'] | b64decode | trim }}_#{{ build_repo_commit }}_R{{ build_number }}"
+
+    - name: Replace build info placeholders in /boot/pt-issue.txt
+      replace:
+        path: /boot/pt-issue.txt
+        regexp: "{{ item.placeholder }}"
+        replace: "{{ item.replace }}"
+      with_items:
+      - { placeholder: 'BUILD_ID_TAG', replace: '{{ build_id }}'}
+      - { placeholder: 'BUILD_REPO_URL', replace: 'https://github.com/pi-top/pi-topOS-ansible-playbook'}
+      - { placeholder: 'BUILD_REPO_COMMIT', replace: '{{ build_repo_commit }}'}
+      - { placeholder: 'BUILD_ACTION_URL', replace: '{{ build_action_url }}'}
+
+##############
+# config.txt #
+##############
+    - name: Copy boot config.txt
+      copy:
+        src: files/config.txt
+        dest: /boot/config.txt
+        mode: '0755'
+
+    - name: Copy boot config.txt backup
+      copy:
+        src: files/config.txt
+        dest: /boot/config.txt.orig
+        mode: '0755'
+
+########
+# MOTD #
+########
+    - name: Remove 10-uname
+      file:
+        dest: /etc/update-motd.d/10-uname
+        state: absent
+
+    - name: Copy motd
+      copy:
+        src: files/10-pt-motd
+        dest: /etc/update-motd.d/10-pt-motd
+        mode: '0755'
+
+##################
+# System Patches #
+##################
+    - name: Apply patches
+      patch:
+        # TODO: Add -vvv
+        src: "files/patches/{{ item }}"
+        basedir: /
+        strip: 1
+      loop:
+        - add-post–boot-blinking-cursor.diff
+        - locale-us.diff
+        - volume-max.diff
+        - dpms-timeout-5mins.diff
+        - disable-openbox-session-right-click-menu.diff
+        - empty-etc-issue.diff
+        - empty-etc-motd.diff
+        - hostname.diff
+        - hosts.diff
+        - source-etc-profile-in-etc-zsh-zprofile.diff
+        - static-ip-on-usb-interface.diff
+        - us-keyboard.diff
+        - openbox-xdg-autostart-shebang.diff
+        - dynamic-swap.diff
+
+###########################################
+# Onboarding setup: systemd/dbus services #
+###########################################
+    - name: Disable notifications until onboarding is completed
+      shell: |
+        mkdir -p /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
+        mv /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
+
+    - name: Enable Onboarding (using symlink)
+      shell: ln -sf /usr/lib/pt-os-web-portal/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
+
+    # Boot to openbox-session by setting priority 99 (higher than LXDE default)
+    - name: Set openbox-session as session manager
+      shell: update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/openbox-session 99
+
+    - name: Disable firmware updater for onboarding (using symlink)
+      file:
+        dest: /etc/systemd/system/graphical.target.wants/pt-firmware-updater.service
+        state: absent
+
+    - name: Disable Further Link for onboarding (using symlink)
+      file:
+        dest: /etc/systemd/system/multi-user.target.wants/further-link.service
+        state: absent
+
+    - name: Disable OLED menu until onboarding finishes (using symlink)
+      file:
+        dest: /etc/systemd/system/multi-user.target.wants/pt-miniscreen.service
+        state: absent
+
+    - name: Enable VNC Server (using symlink)
+      file:
+        dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
+        src: /usr/lib/systemd/system/vncserver-x11-serviced.service
+        state: link
+      when: not is_64_bit | bool
+
+###################################
+# Onboarding setup: system config #
+###################################
+    - name: Print hostname
+      shell: hostname
+
+    - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
+      shell: wifi-ap-sta enable
+
+    - name: Set up virtual Ethernet driver for pi-top [4] display port
+      replace:
+        path: /boot/cmdline.txt
+        regexp: "{{ item.original }}"
+        replace: "{{ item.replace }}"
+      with_items:
+      - { original: ' modules-load=dwc2,g_ether', replace: ''}
+      - { original: 'rootwait', replace: 'rootwait modules-load=dwc2,g_ether'}
+
+    - name: Clean boot configuration
+      shell: |
+        cmdline_txt_contents=$(cat /boot/cmdline.txt)
+
+        # Disable Raspberry Pi logo on boot screen
+        cmdline_txt_contents="${cmdline_txt_contents} logo.nologo"
+
+        # Remove blinking cursor
+        cmdline_txt_contents="${cmdline_txt_contents} vt.global_cursor_default=0"
+
+        # Disable error logging
+        cmdline_txt_contents="${cmdline_txt_contents} loglevel=0"
+
+        # Framebuffer console: map all TTYs to frame buffer 2
+        # Removes every boot message, logo, etc.
+        # Longer boot time? Browser takes longer? (https://badlywired.com/2017/09/recipe-for-a-raspberry-pi-kiosk/)
+        cmdline_txt_contents="${cmdline_txt_contents} fbcon=map:2"
+
+        echo "${cmdline_txt_contents}" > /boot/cmdline.txt
+
+#########################
+# General system config #
+#########################
+    - name: Setup pt-os-init to run on first boot
+      shell: /sbin/pt-os-init prepare
+
+    - name: Generate default locales
+      locale_gen:
+        name: "{{ item }}"
+      loop:
+        - en_GB.UTF-8
+        - en_US.UTF-8
+
+    - name: Set default locale to US
+      shell: update-locale LANG=en_US.UTF-8
+
+    # More information on this file:
+    # https://wiki.debian.org/systemd#Missing_startup_messages_on_console.28tty1.29_after_the_boot
+    - name: Clear Plymouth splashscreen if booting to console
+      file:
+        dest: /etc/systemd/system/getty@tty1.service.d/noclear.conf
+        state: absent
+
+    - name: Set sysd logs to persist
+      file:
+        path: /var/log/journal
+        state: directory
+        recurse: true
+
+    - name: Set plymouth theme to 'pt-os-bootsplash'
+      shell: plymouth-set-default-theme -R pt-os-bootsplash
+
+    # openbox configuration is modified to prevent key-presses in openbox-session during onboarding
+    - name: Configure openbox environment
+      shell: |
+        mkdir -p /home/pi/.config/openbox
+        cp /etc/xdg/openbox/rc.xml /home/pi/.config/openbox/rc.xml
+        keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
+        sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
+
+    # Ensure that directory exists before using
+    - file:
+        path: /lib/systemd/system/dphys-swapfile.service.d
+        state: directory
+
+    - name: Run swap file generation in the background for faster startup
+      copy:
+        content: |
+          [Service]
+          Type=simple
+        dest: /lib/systemd/system/dphys-swapfile.service.d/10-dynamic-swap-in-bg.conf
+
+############
+# Clean up #
+############
+    - name: Remove leftover raspi-ui-overrides directory
+      file:
+        dest: /usr/share/raspi-ui-overrides
+        state: absent
+
+    - name: Clean up fonts, saving ~600mb
+      apt:
+        name: "{{ packages }}"
+        state: absent
+        purge: true
+        autoclean: true
+        autoremove: true
+      vars:
+        packages:
+          - fonts-noto-cjk
+          - fonts-noto-cjk-extra
+          - fonts-noto-color-emoji
+          - fonts-noto-extra
+          - fonts-noto-mono
+          - fonts-noto-ui-core
+          - fonts-noto-ui-extra
+          - fonts-noto-unhinted
+
+    - name: Clean up Raspberry Pi OS stuff
+      apt:
+        name: "{{ packages }}"
+        state: absent
+        purge: true
+        autoclean: true
+        autoremove: true
+      vars:
+        packages:
+          - bluej
+          - claws-mail
+          - code-the-classics
+          - default-jre
+          - default-jre-headless
+          - dillo
+          - epiphany-browser
+          - epiphany-browser-data
+          - galculator
+          - geany
+          - geany-common
+          - greenfoot-unbundled
+          - nodered
+          - openjdk-11-jre
+          - openjdk-11-jre-headless  # ~400MB w/ dependent packages
+#          - piwiz
+          - pprompt
+          - python-games
+          - python3-thonny
+          - python3-thonny-pi
+          - qpdfview
+#          - raspberrypi-ui-mods
+          - scratch
+          - scratch2
+          - thonny
+          - wolfram-engine
+
+    - name: Cleanup files and folders
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/default/rpi-eeprom-update.*
+        - /var/lib/apt/lists/*
+        - /home/pi/MagPi
+        - /var/log/*
+        - /tmp/*
+        - /etc/apt/apt.conf.d/51cache
+        - /etc/network/interfaces.dpkg-old
+        - /etc/apt/sources.list~
+        - /etc/apt/trusted.gpg~
+        - /etc/passwd-
+        - /etc/group-
+        - /etc/shadow-
+        - /etc/gshadow-
+        - /etc/subuid-
+        - /etc/subgid-
+        - /var/cache/debconf/*-old
+        - /var/lib/dpkg/*-old
+        - /usr/share/icons/*/icon-theme.cache
+        - /var/lib/dbus/machine-id
+        - /root/.vnc/private.key
+        - /etc/vnc/updateid
+        - /var/cache/apt/archives  # Fixed in next step
+        - /root/.ansible
+        - /..deb
+
+    - name: Fix apt cache
+    # 'apt clean' does not work with ansible
+    # so, we remove "/var/cache/apt/archives" (in previous step)
+    # and then we re-add "/var/cache/apt/archives/partial"
+    # which has the same effect
+    #
+    # reference: https://www.cyberciti.biz/faq/can-i-delete-var-cache-apt-archives-for-ubuntu-debian-linux/
+      file:
+        dest: /var/cache/apt/archives/partial
+        state: directory
+
+    - name: Consolidate duplicate files in /usr/share/doc
+      shell: 'hardlink -t /usr/share/doc'
+
+############
+# Finalise #
+############
+    # Finalise image as pi-gen does in 'export-image/04-finalise/01-run.sh'
+    - name: Update system time
+      shell: "date -u '+%Y-%m-%d %H:%M:%S' > /etc/fake-hwclock.data"
+      # shell: '/sbin/fake-hwclock save force'
+
+
+    # Fix permissions since ansible runs chroot as root, so we have to clean up
+    - name: Fix ownership and permissions of /home/pi
+      file:
+        path: /home/pi/
+        state: directory
+        recurse: yes
+        owner: pi
+        group: pi
+        mode: '0755'

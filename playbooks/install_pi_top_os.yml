@@ -1,0 +1,99 @@
+#- import_playbook: mount_pi_top_os.yml
+
+- hosts: pi_top_os:192.168.*:!localhost
+  gather_facts: true
+  environment:
+    # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
+    PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
+  vars:
+    repo_name: experimental
+    distro_name: bullseye
+
+    recovery_mount_to: /boot/.recovery
+
+  tasks:
+    - name: Upgrade Raspberry Pi OS
+      apt:
+        state: latest
+        update_cache: true
+        install_recommends: true
+      register: apt_status
+      retries: 5
+      until: apt_status is success
+
+    - name: Add pi-top master apt key
+      apt_key:
+        data: "{{ lookup('file', 'pt-apt.asc') }}"
+        state: present
+
+    - name: Add pi-top PackageCloud apt key
+      apt_key:
+        url: "https://packagecloud.io/pi-top/{{ repo_name }}/gpgkey"
+        state: present
+
+    - name: Add pi-top build repository
+      apt_repository:
+        repo: "deb https://packagecloud.io/pi-top/{{ repo_name }}/debian/ {{ distro_name }} main"
+        filename: "pi-top"
+        update_cache: true
+
+    - name: Install pt-os
+      apt:
+        name: pt-os
+        update_cache: true
+        state: latest
+        install_recommends: true
+        default_release: "{{ distro_name }}"
+      register: apt_status
+      retries: 5
+      until: apt_status is success
+
+#########################
+# Recovery installation #
+#########################
+    - name: Get recovery partition PARTUUID from original device identifier in cmdline.txt
+      shell: cat /boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3"-01"}'
+      register: recovery_partuuid
+
+    - name: Remove previous recovery partition entries
+      lineinfile:
+        dest: /etc/fstab
+        state: absent
+        regexp: "PARTUUID={{ recovery_partuuid.stdout }}"
+
+    - name: Set recovery partition to automatically mount (to avoid seeing on desktop)
+      lineinfile:
+        path: /etc/fstab
+        line: "PARTUUID={{ recovery_partuuid.stdout }}  {{ recovery_mount_to }}  vfat  defaults  0  2"
+
+    - name: Get information about recovery releases
+      uri:
+        url: https://api.github.com/repos/pi-top/pi-topOS-Recovery/releases/latest
+        return_content: true
+      register: json_response
+
+    - name: Download latest recovery
+      get_url:
+        url: "{{ json_response.json.assets[0].browser_download_url }}"
+        dest: /tmp/recovery.zip
+
+    - name: Unzip recovery into partition 1
+      unarchive:
+        remote_src: yes
+        src: /tmp/recovery.zip
+        dest: /recovery
+
+    - name: Copy autoboot.txt
+      copy:
+        src: files/autoboot.txt
+        dest: /recovery/autoboot.txt
+        mode: '0755'
+
+    # TODO: move to a new stage
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+        update_cache: true
+      register: apt_status
+      retries: 5
+      until: apt_status is success
