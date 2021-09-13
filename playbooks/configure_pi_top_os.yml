@@ -275,43 +275,52 @@
         autoremove: true
       vars:
         packages:
+          # Java (large size, not used)
+          # ~400MB w/ dependent packages
           - default-jre
           - default-jre-headless
-          - dillo
-          - galculator
+          - openjdk-11-jre
+          - openjdk-11-jre-headless
+          # Unused applications
+          - dillo  # No need for other browsers
+          - qpdfview  # PDFs handled by Chromium
+          - galculator  # replaced by 'gnome-calculator', a multi-touch friendly calculator
+          # IDE - default to VS Code
           - geany
           - geany-common
-          - openjdk-11-jre
-          - openjdk-11-jre-headless  # ~400MB w/ dependent packages
-          - piwiz
-          - pprompt
-          - qpdfview
-          - raspberrypi-ui-mods
           - thonny
+          # RPi OS
+          # Handled by packages:
+          # - piwiz
+          # - raspberrypi-ui-mods
+          - libpam-chksshpwd  # SSH desktop password check - stock check for "raspberry"
+          # - pprompt  # show prompt if PAM leaves breadcrumb
 
-    - name: Cleanup files and folders
+    - name: Clean up unwanted build process artifacts
       file:
         path: "{{ item }}"
         state: absent
       loop:
-        - /etc/apt/trusted.gpg~
+        - /etc/apt/trusted.gpg~  # Temporary file from GPG
+        # Temporary password management files
         - /etc/passwd-
         - /etc/group-
         - /etc/shadow-
         - /etc/gshadow-
-        - /var/lib/dbus/machine-id
-        - /root/.vnc/private.key
+        - /etc/machine-id  # https://www.man7.org/linux/man-pages/man5/machine-id.5.html
+        # VNC
         - /etc/vnc/updateid
-        - /var/cache/apt/archives  # Fixed in next step
-        - /root/.ansible
+        - /root/.vnc/private.key
+        - /root/.ansible  # chroot artifact
+        - /var/cache/apt/archives  # fixed in next step
 
     - name: Fix apt cache
-    # 'apt clean' does not work with ansible
-    # so, we remove "/var/cache/apt/archives" (in previous step)
-    # and then we re-add "/var/cache/apt/archives/partial"
-    # which has the same effect
-    #
-    # reference: https://www.cyberciti.biz/faq/can-i-delete-var-cache-apt-archives-for-ubuntu-debian-linux/
+      # 'apt clean' does not work with ansible
+      # so, we remove "/var/cache/apt/archives" (in previous step)
+      # and then we re-add "/var/cache/apt/archives/partial"
+      # which has the same effect
+      #
+      # reference: https://www.cyberciti.biz/faq/can-i-delete-var-cache-apt-archives-for-ubuntu-debian-linux/
       file:
         dest: /var/cache/apt/archives/partial
         state: directory
