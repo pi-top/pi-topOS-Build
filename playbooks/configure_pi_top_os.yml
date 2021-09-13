@@ -301,18 +301,21 @@
         path: "{{ item }}"
         state: absent
       loop:
-        - /etc/apt/trusted.gpg~  # Temporary file from GPG
-        # Temporary password management files
+        # temporary file from GPG:
+        - /etc/apt/trusted.gpg~
+        # temporary password management files:
         - /etc/passwd-
         - /etc/group-
         - /etc/shadow-
         - /etc/gshadow-
-        - /etc/machine-id  # https://www.man7.org/linux/man-pages/man5/machine-id.5.html
-        # VNC
+        # machine-specific IDs and keys:
+        - /etc/machine-id
         - /etc/vnc/updateid
         - /root/.vnc/private.key
-        - /root/.ansible  # chroot artifact
-        - /var/cache/apt/archives  # fixed in next step
+        # chroot artifact
+        - /root/.ansible
+        # fixed in next step:
+        - /var/cache/apt/archives
 
     - name: Fix apt cache
       # 'apt clean' does not work with ansible
