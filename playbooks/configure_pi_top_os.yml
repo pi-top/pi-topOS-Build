@@ -275,62 +275,35 @@
         autoremove: true
       vars:
         packages:
-          - bluej
-          - claws-mail
-          - code-the-classics
           - default-jre
           - default-jre-headless
           - dillo
-          - epiphany-browser
-          - epiphany-browser-data
           - galculator
           - geany
           - geany-common
-          - greenfoot-unbundled
-          - nodered
           - openjdk-11-jre
           - openjdk-11-jre-headless  # ~400MB w/ dependent packages
-#          - piwiz
+          - piwiz
           - pprompt
-          - python-games
-          - python3-thonny
-          - python3-thonny-pi
           - qpdfview
-#          - raspberrypi-ui-mods
-          - scratch
-          - scratch2
+          - raspberrypi-ui-mods
           - thonny
-          - wolfram-engine
 
     - name: Cleanup files and folders
       file:
         path: "{{ item }}"
         state: absent
       loop:
-        - /etc/default/rpi-eeprom-update.*
-        - /var/lib/apt/lists/*
-        - /home/pi/MagPi
-        - /var/log/*
-        - /tmp/*
-        - /etc/apt/apt.conf.d/51cache
-        - /etc/network/interfaces.dpkg-old
-        - /etc/apt/sources.list~
         - /etc/apt/trusted.gpg~
         - /etc/passwd-
         - /etc/group-
         - /etc/shadow-
         - /etc/gshadow-
-        - /etc/subuid-
-        - /etc/subgid-
-        - /var/cache/debconf/*-old
-        - /var/lib/dpkg/*-old
-        - /usr/share/icons/*/icon-theme.cache
         - /var/lib/dbus/machine-id
         - /root/.vnc/private.key
         - /etc/vnc/updateid
         - /var/cache/apt/archives  # Fixed in next step
         - /root/.ansible
-        - /..deb
 
     - name: Fix apt cache
     # 'apt clean' does not work with ansible
