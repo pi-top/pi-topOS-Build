@@ -68,7 +68,7 @@ jobs:
 
           echo "==> Running configure_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars distro_name=${{ github.event.inputs.REPO_NAME || 'bullseye' }} \
-                     --extra-vars build_number=${GITHUB_RUN_NUMBER} \
+                     --extra-vars build_number=${{ github.run_number || github.run_id }} \
                      --extra-vars build_repo_commit="$(git rev-parse HEAD)" \
                      --extra-vars build_action_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars build_repo_name="experimental-pkgcld" \
@@ -85,7 +85,7 @@ jobs:
 
       - name: Get push artifact name
         if: github.event_name == 'push'
-        run: echo "ARTIFACT_NAME=pt-os-${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV
+        run: echo "ARTIFACT_NAME=pt-os-${{ github.run_number || github.run_id }}" >> $GITHUB_ENV
 
       # 'pt-os' artifact name is used by publish.yml
       - name: Get manual trigger artifact name
