@@ -87,9 +87,8 @@ jobs:
         if: github.event_name == 'push'
         run: echo "ARTIFACT_NAME=pt-os-${{ github.run_number || github.run_id }}" >> $GITHUB_ENV
 
-      # 'pt-os' artifact name is used by publish.yml
-      - name: Get manual trigger artifact name
-        if: github.event_name == 'workflow_dispatch'
+      - name: Get manual/schedule trigger artifact name
+        if: github.event_name != 'push'
         run: echo "ARTIFACT_NAME=pt-os" >> $GITHUB_ENV
 
       - name: Upload OS zip artifact
