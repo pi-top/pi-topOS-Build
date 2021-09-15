@@ -6,7 +6,7 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
-    repo_name: experimental
+    repo_name: pi-top-os-unstable
     distro_name: bullseye
 
     recovery_mount_to: /boot/.recovery

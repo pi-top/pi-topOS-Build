@@ -7,7 +7,7 @@
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
     build_id_schema_version: 1
-    build_repo_name: "experimental-pkgcld"
+    build_repo_name: "unstable-pkgcld"
     build_repo_commit: unknown
     build_number: 0
     build_action_url: unknown
