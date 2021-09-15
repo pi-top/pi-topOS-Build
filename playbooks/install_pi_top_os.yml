@@ -28,12 +28,12 @@
 
     - name: Add pi-top PackageCloud apt key
       apt_key:
-        url: "https://packagecloud.io/pi-top/{{ repo_name }}/gpgkey"
+        url: "https://packages.pi-top.com/{{ repo_name }}/gpgkey"
         state: present
 
     - name: Add pi-top build repository
       apt_repository:
-        repo: "deb https://packagecloud.io/pi-top/{{ repo_name }}/debian/ {{ distro_name }} main"
+        repo: "deb https://packages.pi-top.com/{{ repo_name }}/debian/ {{ distro_name }} main"
         filename: "pi-top"
         update_cache: true
 
