@@ -192,7 +192,7 @@
 # General system config #
 #########################
     - name: Setup pt-os-init to run on first boot
-      shell: /sbin/pt-os-init prepare
+      shell: /usr/sbin/pt-os-init prepare
 
     - name: Generate default locales
       locale_gen:
