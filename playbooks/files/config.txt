@@ -46,7 +46,9 @@ dtoverlay=dwc2
 #/////////////////////
 # HDMI configuration /
 #/////////////////////
-# Force HDMI out - allow VNC without a display attached
+# Force HDMI out
+#  - allow hotplugging a display
+#  - allow VNC without a display attached
 hdmi_force_hotplug:1=1
 
 [all]
