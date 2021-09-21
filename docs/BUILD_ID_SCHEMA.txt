@@ -12,7 +12,7 @@ Schema Version 1 format: "{{ Apt Repo ID }}"
 
 This represents the apt repository ID used for installing pi-topOS software.
 
-e.g. "experimental-pkgcld"
+e.g. "unstable"
 
 ### Date (D)
 The date that pi-topOS was built.
