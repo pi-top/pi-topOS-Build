@@ -233,13 +233,6 @@
         path: /lib/systemd/system/dphys-swapfile.service.d
         state: directory
 
-    - name: Run swap file generation in the background for faster startup
-      copy:
-        content: |
-          [Service]
-          Type=simple
-        dest: /lib/systemd/system/dphys-swapfile.service.d/10-dynamic-swap-in-bg.conf
-
 ############
 # Clean up #
 ############
