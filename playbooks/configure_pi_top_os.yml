@@ -169,31 +169,30 @@
       - { original: ' modules-load=dwc2,g_ether', replace: ''}
       - { original: 'rootwait', replace: 'rootwait modules-load=dwc2,g_ether'}
 
-    - name: Clean boot configuration
+    - name: Clean boot configuration - Disable Raspberry Pi logo on boot screen
       shell: |
-        cmdline_txt_contents=$(cat /boot/cmdline.txt)
+        echo "$(cat /boot/cmdline.txt) logo.nologo" > /boot/cmdline.txt
 
-        # Disable Raspberry Pi logo on boot screen
-        cmdline_txt_contents="${cmdline_txt_contents} logo.nologo"
+    - name: Clean boot configuration - Remove blinking cursor
+      shell: |
+        echo "$(cat /boot/cmdline.txt) vt.global_cursor_default=0" > /boot/cmdline.txt
 
-        # Remove blinking cursor
-        cmdline_txt_contents="${cmdline_txt_contents} vt.global_cursor_default=0"
+    - name: Clean boot configuration - Disable error logging
+      shell: |
+        echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
 
-        # Disable error logging
-        cmdline_txt_contents="${cmdline_txt_contents} loglevel=0"
-
-        # Framebuffer console: map all TTYs to frame buffer 2
-        # Removes every boot message, logo, etc.
-        # Longer boot time? Browser takes longer? (https://badlywired.com/2017/09/recipe-for-a-raspberry-pi-kiosk/)
-        cmdline_txt_contents="${cmdline_txt_contents} fbcon=map:2"
-
-        echo "${cmdline_txt_contents}" > /boot/cmdline.txt
+    # Disable output for first boot init process
+    # by mapping all TTYs in framebuffer console (fbcon) to frame buffer 2
+    # Longer boot time? Browser takes longer? (https://badlywired.com/2017/09/recipe-for-a-raspberry-pi-kiosk/#comment-11099)
+    - name: Clean boot configuration - Disable output for first boot init process
+      shell: |
+        echo "$(cat /boot/cmdline.txt) fbcon=map:2" > /boot/cmdline.txt
 
 #########################
 # General system config #
 #########################
-    - name: Setup pt-os-init to run on first boot
-      shell: /usr/sbin/pt-os-init prepare
+    - name: Setup pt-os-first-boot-setup to run on first boot
+      shell: /usr/sbin/pt-os-first-boot-setup prepare
 
     - name: Generate default locales
       locale_gen:
