@@ -177,7 +177,15 @@
       shell: |
         echo "$(cat /boot/cmdline.txt) vt.global_cursor_default=0" > /boot/cmdline.txt
 
-    - name: Clean boot configuration - Disable error logging
+    - name: Clean boot configuration - Disable boot kernel warnings/errors
+      # Usually harmless, always scary
+      #
+      # e.g.:
+      # [    3.220901 ] usb 1-1.4.2: device descriptor read/64, error -32
+      # [    3.195188 ] usb 1-1.4.2: device descriptor read/64, error -32
+      # [    3.751421 ] usb 1-1.4.2: device descriptor read/64, error -32
+      # [    3.992474 ] usb 1-1.4.2: device not accepting address 8, error -71
+      # [    5.713155 ] usb 1-1.4-port2: unable to enumerate USB device
       shell: |
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
 
