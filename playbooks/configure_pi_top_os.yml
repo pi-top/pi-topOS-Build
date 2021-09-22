@@ -181,13 +181,6 @@
       shell: |
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
 
-    # Disable output for first boot init process
-    # by mapping all TTYs in framebuffer console (fbcon) to frame buffer 2
-    # Longer boot time? Browser takes longer? (https://badlywired.com/2017/09/recipe-for-a-raspberry-pi-kiosk/#comment-11099)
-    - name: Clean boot configuration - Disable output for first boot init process
-      shell: |
-        echo "$(cat /boot/cmdline.txt) fbcon=map:2" > /boot/cmdline.txt
-
 #########################
 # General system config #
 #########################
