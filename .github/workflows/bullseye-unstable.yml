@@ -1,0 +1,99 @@
+name: pi-topOS Unstable Bullseye Build
+
+on:
+  workflow_dispatch
+
+env:
+  DISTRO_NAME: "bullseye"
+  REPO_NAME: "pi-top-os-unstable"
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+      # Fixes https://github.com/pi-top/pi-topOS-ansible-playbook/issues/18
+      - uses: rokroskar/workflow-run-cleanup-action@v0.3.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: TRUE
+
+      - name: GitHub Environment Variables Action
+        uses: FranzDiebold/github-env-vars-action@v1.2.1
+
+      - name: Checkout code
+        uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
+
+      - name: Install ansible and playbook dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y ansible qemu-user-static unzip zerofree
+
+      - name: Build
+        run: |
+          export ANSIBLE_FORCE_COLOR=true
+          export TERM=xterm-color
+          # chroot connection requires running as root
+          # 'ansible-playbook' is not in root user's PATH
+          ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
+
+          echo "==> Running get_raspios playbook..."
+          ${ANSIBLE} playbooks/get_raspios.yml
+
+          echo "==> Running mount_raspios playbook..."
+          ${ANSIBLE} playbooks/mount_raspios.yml
+
+          echo "==> Running create_pi_top_os_image playbook..."
+          ${ANSIBLE} playbooks/create_pi_top_os_image.yml
+
+          echo "==> Running mount_pi_top_os playbook..."
+          ${ANSIBLE} playbooks/mount_pi_top_os.yml
+
+          echo "==> Running install_pi_top_os playbook..."
+          ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
+                     --extra-vars distro_name=${{ env.DISTRO_NAME }} \
+                     playbooks/install_pi_top_os.yml
+
+          echo "==> Running configure_pi_top_os playbook..."
+          ${ANSIBLE} --extra-vars distro_name=${{ env.DISTRO_NAME }} \
+                     --extra-vars build_number=${{ github.run_number || github.run_id }} \
+                     --extra-vars build_repo_commit="$(git rev-parse HEAD)" \
+                     --extra-vars build_repo_commit_short="$(git rev-parse --short HEAD)" \
+                     --extra-vars build_action_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                     --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
+                     playbooks/configure_pi_top_os.yml
+
+          echo "==> Running finalise_pi_top_image playbook..."
+          ${ANSIBLE} playbooks/finalise_pi_top_image.yml
+
+          # echo "==> Running analyse_build playbook..."
+          # ${ANSIBLE} playbooks/analyse_build.yml
+
+      - name: Get zip filename
+        run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
+
+      - name: Get artifact name
+        run: echo "ARTIFACT_NAME=pt-os-${{ github.run_number || github.run_id }}" >> $GITHUB_ENV
+
+      - name: Upload OS zip artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          if-no-files-found: error
+          path: ${{ env.ZIP_FILENAME }}
+
+      - name: Upload metadata artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: metadata
+          if-no-files-found: error
+          path: |
+            playbooks/artifacts/*
+            !${{ env.ZIP_FILENAME }}
+
+      - name: Upload OS zip to GCS
+        uses: google-github-actions/upload-cloud-storage@v0.4.0
+        with:
+          credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
+          path: ${{ env.ZIP_FILENAME }}
+          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ env.DISTRO_NAME }}/

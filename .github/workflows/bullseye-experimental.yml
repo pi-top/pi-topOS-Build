@@ -1,23 +1,17 @@
-name: pi-topOS Build
+name: pi-topOS Experimental Bullseye Build
 
 on:
   push:
     branches:
       - "**"
   workflow_dispatch:
-    # Not required as defaults are handled later on (to support push events)
-    inputs:
-      REPO_NAME:
-        description: 'Repo name (https://packagecloud.io/pi-top)'
-        required: true
-        default: "pi-top-os-unstable"
-      DISTRO_NAME:
-        description: 'Debian Distribution'
-        required: true
-        default: "bullseye"
   schedule:
     # Run daily at midnight
     - cron:  '0 0 * * *'
+
+env:
+  DISTRO_NAME: "bullseye"
+  REPO_NAME: "experimental"
 
 jobs:
   build:
@@ -62,17 +56,17 @@ jobs:
           ${ANSIBLE} playbooks/mount_pi_top_os.yml
 
           echo "==> Running install_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars repo_name=${{ github.event.inputs.REPO_NAME || 'experimental' }} \
-                     --extra-vars distro_name=${{ github.event.inputs.DISTRO_NAME || 'bullseye' }} \
+          ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
+                     --extra-vars distro_name=${{ env.DISTRO_NAME }} \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars distro_name=${{ github.event.inputs.REPO_NAME || 'bullseye' }} \
+          ${ANSIBLE} --extra-vars distro_name=${{ env.DISTRO_NAME }} \
                      --extra-vars build_number=${{ github.run_number || github.run_id }} \
                      --extra-vars build_repo_commit="$(git rev-parse HEAD)" \
                      --extra-vars build_repo_commit_short="$(git rev-parse --short HEAD)" \
                      --extra-vars build_action_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-                     --extra-vars build_repo_name="${{ github.event.inputs.REPO_NAME || 'experimental' }}" \
+                     --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
@@ -108,4 +102,4 @@ jobs:
         with:
           credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
           path: ${{ env.ZIP_FILENAME }}
-          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ github.event.inputs.DISTRO_NAME }}/
+          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ env.DISTRO_NAME }}/
