@@ -306,6 +306,13 @@
         # fixed in next step:
         - /var/cache/apt/archives
 
+    # systemd will fail if system does not contain a
+    # (possibly empty) /etc/machine-id file
+    - name: Empty machine ID
+      file:
+        path: /etc/machine-id
+        state: touch
+
     - name: Fix apt cache
       # 'apt clean' does not work with ansible
       # so, we remove "/var/cache/apt/archives" (in previous step)
