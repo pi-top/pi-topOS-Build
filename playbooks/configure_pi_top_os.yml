@@ -212,12 +212,6 @@
         dest: /etc/systemd/system/getty@tty1.service.d/noclear.conf
         state: absent
 
-    - name: Set sysd logs to persist
-      file:
-        path: /var/log/journal
-        state: directory
-        recurse: true
-
     - name: Set plymouth theme to 'pt-os-bootsplash'
       shell: plymouth-set-default-theme -R pt-os-bootsplash
 
@@ -285,6 +279,12 @@
           - libpam-chksshpwd  # SSH desktop password check - stock check for "raspberry"
           # - pprompt  # show prompt if PAM leaves breadcrumb
 
+    # TODO: move file management to post-config step (finalise)
+    #     use mount, not chroot
+    #     clean up logs, etc. _after_ using it
+    # incl. remove build journal logs
+    # i.e. ALL operations that are machine-agnostic should be pre- and post-config steps
+    # to minimise time in chroot
     - name: Clean up unwanted build process artifacts
       file:
         path: "{{ item }}"
@@ -305,6 +305,8 @@
         - /root/.ansible
         # fixed in next step:
         - /var/cache/apt/archives
+        # remove all logs
+        - /var/log/journal
 
     # systemd will fail if system does not contain a
     # (possibly empty) /etc/machine-id file
@@ -312,6 +314,12 @@
       file:
         path: /etc/machine-id
         state: touch
+
+    - name: Set sysd logs to persist
+      file:
+        path: /var/log/journal
+        state: directory
+        recurse: true
 
     - name: Fix apt cache
       # 'apt clean' does not work with ansible
