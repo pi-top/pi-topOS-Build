@@ -112,7 +112,12 @@
         - static-ip-on-usb-interface.diff
         - us-keyboard.diff
         - openbox-xdg-autostart-shebang.diff
-        - dynamic-swap.diff
+        - increase-swap.diff
+
+    - name: Create swapfile
+      shell: |
+        /sbin/dphys-swapfile setup
+        /sbin/dphys-swapfile swapon
 
 ###########################################
 # Onboarding setup: systemd/dbus services #
