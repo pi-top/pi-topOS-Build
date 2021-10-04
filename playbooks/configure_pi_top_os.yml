@@ -14,6 +14,7 @@
     build_action_url: unknown
 
     is_64_bit: false
+    swapfile_size_mb: 512
 
     # Created with :
     # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
@@ -112,11 +113,11 @@
         - static-ip-on-usb-interface.diff
         - us-keyboard.diff
         - openbox-xdg-autostart-shebang.diff
-        - increase-swap.diff
 
-    - name: Create 512MB swapfile
+    - name: Create swapfile
       shell: |
-        bash -c "dd if=/dev/zero of=/var/swap bs=1024 count=$((1024 * 512))"
+        sed -i "s|CONF_SWAPSIZE=100|CONF_SWAPSIZE={{ swapfile_size_mb }}|" /etc/dphys-swapfile
+        dd if=/dev/zero of=/var/swap bs=1024 count=$((1024 * {{ swapfile_size_mb }}))
 
 ###########################################
 # Onboarding setup: systemd/dbus services #
