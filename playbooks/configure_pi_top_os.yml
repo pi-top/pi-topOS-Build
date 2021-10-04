@@ -116,7 +116,7 @@
 
     - name: Create 512MB swapfile
       shell: |
-        dd if=/dev/zero of=/var/swap bs=1024 count=((1024 * 512))
+        bash -c "dd if=/dev/zero of=/var/swap bs=1024 count=$((1024 * 512))"
 
 ###########################################
 # Onboarding setup: systemd/dbus services #
