@@ -114,10 +114,9 @@
         - openbox-xdg-autostart-shebang.diff
         - increase-swap.diff
 
-    - name: Create swapfile
+    - name: Create 512MB swapfile
       shell: |
-        /sbin/dphys-swapfile setup
-        /sbin/dphys-swapfile swapon
+        dd if=/dev/zero of=/var/swap bs=1024 count=((1024 * 512))
 
 ###########################################
 # Onboarding setup: systemd/dbus services #
