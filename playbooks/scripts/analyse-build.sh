@@ -7,16 +7,20 @@ set -euo pipefail
 IFS=$'\n\t'
 ###############################################################
 
-set -x
+ARTIFACTS_PREFIX="${1:-}"
 
-ARTIFACTS_PREFIX="${1}"
+if [[ -n ${ARTIFACTS_PREFIX:-} ]]; then
+  ARTIFACTS_PREFIX="${ARTIFACTS_PREFIX}-"
+fi
 ARTIFACTS_PATH="${2:-/tmp/artifacts}"
 
 echo "Getting list of installed pi-top packages..."
 installed_pi_top_packages=($(aptitude search "?origin (pi-top) ?installed" -F %p))
 
 generate_package_list() {
-  packages_to_use=()
+  # Packages not picked up properly by parsing apt-cache
+  packages_to_use=("i2c-tools" "systemd" "python3")
+
   for p in ${installed_pi_top_packages[@]}; do
     echo "${p}"
     deps=($(apt-cache depends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances ${p} | tail -n +2 | awk '{print $2}' | sort -u))
@@ -67,8 +71,8 @@ sudo sed -i "/${prefix_text}\$/,\$d" /etc/debtree/skiplist
 # Apply new package list
 update_debtree_file "${prefix_text}" /etc/debtree/skiplist
 
-debtree --show-installed pt-os | dot -T png >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}-deps-os-pt.png"
+debtree --show-installed pt-os | dot -T png >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}deps-os-pt.png"
 
-tree --charset=ascii /etc/systemd/system >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}-systemd-tree.txt"
+tree --charset=ascii /etc/systemd/system >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}systemd-tree.txt"
 
 exit 0
