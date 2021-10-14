@@ -101,7 +101,6 @@
         strip: 1
       loop:
         - add-post–boot-blinking-cursor.diff
-        - locale-us.diff
         - volume-max.diff
         - dpms-timeout-5mins.diff
         - disable-openbox-session-right-click-menu.diff
@@ -112,6 +111,7 @@
         - source-etc-profile-in-etc-zsh-zprofile.diff
         - static-ip-on-usb-interface.diff
         - us-keyboard.diff
+        - us-locale.diff
         - openbox-xdg-autostart-shebang.diff
 
     - name: Create swapfile
