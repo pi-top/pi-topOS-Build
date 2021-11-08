@@ -58,10 +58,10 @@
     - set_fact:
         boot:
           fstype: "{{ blkid_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid_line: "{{ blkid_boot_stdout.stdout_lines[-1] }}"
+          partuuid: "{{ blkid_boot_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
         rootfs:
           fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid_line: "{{ blkid_rootfs_stdout.stdout_lines[-1] }}"
+          partuuid: "{{ blkid_rootfs_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
 
     - debug:
         var: boot
@@ -90,7 +90,7 @@
       become: true
       mount:
         path: "{{ mount_point }}"
-        src: "{{ rootfs.partuuid_line }}"
+        src: "PARTUUID={{ rootfs.partuuid }}"
         fstype: "{{ rootfs.fstype }}"
         fstab: /tmp/raspi-os-fstab
         opts: defaults,noatime
@@ -100,7 +100,7 @@
       become: true
       mount:
         path: "{{ mount_point }}/boot"
-        src: "{{ boot.partuuid_line }}"
+        src: "PARTUUID={{ boot.partuuid }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/raspi-os-fstab
         opts: defaults
