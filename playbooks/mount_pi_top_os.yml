@@ -35,8 +35,11 @@
         var: loop_devices
         verbosity: 2
 
+    - name: Run blkid
+      shell: "blkid"
+
     - name: List all block device info
-      shell: "lsblk --output FSTYPE,UUID,SIZE,PARTUUID '{{ loop_devices.stdout_lines[-1] }}'"
+      shell: "lsblk --noheadings --output SIZE,PARTUUID '{{ loop_devices.stdout_lines[-1] }}'"
       register: fstab_info_all
 
     - debug:
@@ -45,8 +48,20 @@
 
     - set_fact:
         recovery_partuuid: "{{ fstab_info_all.stdout_lines[2].split()[-1] }}"
-        boot_partuuid: "{{ fstab_info_all.stdout_lines[4].split()[-1] }}"
-        rootfs_partuuid: "{{ fstab_info_all.stdout_lines[5].split()[-1] }}"
+        boot_partuuid: "{{ fstab_info_all.stdout_lines[1].split()[-1] }}"
+        rootfs_partuuid: "{{ fstab_info_all.stdout_lines[3].split()[-1] }}"
+
+    - debug:
+        var: recovery_partuuid
+        verbosity: 2
+
+    - debug:
+        var: boot_partuuid
+        verbosity: 2
+
+    - debug:
+        var: rootfs_partuuid
+        verbosity: 2
 
     # Always unmount image, this means create mount point works correctly
     # it a quick and easy way to enable re-running without errors
