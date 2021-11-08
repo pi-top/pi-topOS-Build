@@ -12,6 +12,12 @@
     - set_fact:
         image_path: "{{ image_folder }}{{ image_name }}.img"
 
+    - name: Unzip OS image
+      unarchive:
+        src: "{{ image_folder }}/{{ image_name }}.zip"
+        dest: "{{ image_folder }}"
+        creates: "{{ image_path }}"
+
     - name: List the loop device(s) associated with image
       command: "losetup --output=NAME --associated {{image_path}}"
       register: loop_device_check
