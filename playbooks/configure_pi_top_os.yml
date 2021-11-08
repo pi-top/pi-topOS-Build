@@ -13,7 +13,6 @@
     build_number: 0
     build_action_url: unknown
 
-    is_64_bit: false
     swapfile_size_mb: 512
 
     # Created with :
@@ -148,13 +147,6 @@
       file:
         dest: /etc/systemd/system/multi-user.target.wants/pt-miniscreen.service
         state: absent
-
-    # - name: Enable VNC Server (using symlink)
-    #   file:
-    #     dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
-    #     src: /usr/lib/systemd/system/vncserver-x11-serviced.service
-    #     state: link
-    #   when: not is_64_bit | bool
 
 ###################################
 # Onboarding setup: system config #
