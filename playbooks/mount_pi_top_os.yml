@@ -35,32 +35,51 @@
         var: loop_devices
         verbosity: 2
 
-    - name: Run blkid
-      shell: "blkid"
-
-    - name: List all block device info
-      shell: "lsblk --noheadings --output SIZE,PARTUUID '{{ loop_devices.stdout_lines[-1] }}'"
-      register: fstab_info_all
+    - name: blkid recovery
+      shell: "blkid -l -o export -t LABEL='recovery'"
+      register: blkid_recovery_stdout
 
     - debug:
-        var: fstab_info_all
+        var: blkid_recovery_stdout
+        verbosity: 2
+
+    - name: blkid boot
+      shell: "blkid -l -o export -t LABEL='boot'"
+      register: blkid_boot_stdout
+
+    - debug:
+        var: blkid_boot_stdout
+        verbosity: 2
+
+    - name: blkid rootfs
+      shell: "blkid -l -o export -t LABEL='rootfs'"
+      register: blkid_rootfs_stdout
+
+    - debug:
+        var: blkid_rootfs_stdout
         verbosity: 2
 
     - set_fact:
-        recovery_partuuid: "{{ fstab_info_all.stdout_lines[2].split()[-1] }}"
-        boot_partuuid: "{{ fstab_info_all.stdout_lines[1].split()[-1] }}"
-        rootfs_partuuid: "{{ fstab_info_all.stdout_lines[3].split()[-1] }}"
+        recovery:
+          fstype: "{{ blkid_recovery_stdout.stdout_lines[-2] }}"
+          partuuid_line: "{{ blkid_recovery_stdout.stdout_lines[-1] }}"
+        boot:
+          fstype: "{{ blkid_boot_stdout.stdout_lines[-2] }}"
+          partuuid_line: "{{ blkid_boot_stdout.stdout_lines[-1] }}"
+        rootfs:
+          fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2] }}"
+          partuuid_line: "{{ blkid_rootfs_stdout.stdout_lines[-1] }}"
 
     - debug:
-        var: recovery_partuuid
+        var: recovery
         verbosity: 2
 
     - debug:
-        var: boot_partuuid
+        var: boot
         verbosity: 2
 
     - debug:
-        var: rootfs_partuuid
+        var: rootfs
         verbosity: 2
 
     # Always unmount image, this means create mount point works correctly
@@ -85,8 +104,8 @@
       become: true
       mount:
         path: "{{ mount_point }}"
-        src: "PARTUUID={{ rootfs_partuuid }}"
-        fstype: "ext4"
+        src: "{{ rootfs.partuuid_line }}"
+        fstype: "{{ rootfs.fstype }}"
         fstab: /tmp/pi-top-fstab
         opts: defaults,noatime
         state: mounted
@@ -95,8 +114,8 @@
       become: true
       mount:
         path: "{{ mount_point }}/boot"
-        src: "PARTUUID={{ boot_partuuid }}"
-        fstype: "vfat"
+        src: "{{ boot.partuuid_line }}"
+        fstype: "{{ boot.fstype }}"
         fstab: /tmp/pi-top-fstab
         opts: defaults
         state: mounted
@@ -105,8 +124,8 @@
       become: true
       mount:
         path: "{{ mount_point }}/recovery"
-        src: "PARTUUID={{ recovery_partuuid }}"
-        fstype: "vfat"
+        src: "{{ recovery.partuuid_line }}"
+        fstype: "{{ recovery.fstype }}"
         fstab: /tmp/pi-top-fstab
         opts: defaults
         state: mounted
