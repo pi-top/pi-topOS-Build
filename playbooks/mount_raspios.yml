@@ -4,6 +4,7 @@
 
   vars:
     image_folder: ./
+    # TODO: use 'image_name' on localhost if already defined
     image_name: 2021-10-30-raspios-bullseye-armhf
     mount_point: /tmp/raspi-os
   tasks:
