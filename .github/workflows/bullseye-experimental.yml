@@ -21,12 +21,6 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      # Fixes https://github.com/pi-top/pi-topOS-ansible-playbook/issues/18
-      - uses: rokroskar/workflow-run-cleanup-action@v0.3.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEBUG: TRUE
-
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v1.2.1
 
