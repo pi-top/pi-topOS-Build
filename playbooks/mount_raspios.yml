@@ -4,19 +4,12 @@
 
   vars:
     image_folder: ./
-    # image_name: 2021-05-07-raspios-buster-armhf-full
-    image_name: 2021-06-18-raspios-bullseye-armhf
+    image_name: 2021-10-30-raspios-bullseye-armhf
     mount_point: /tmp/raspi-os
   tasks:
 
     - set_fact:
         image_path: "{{ image_folder }}{{ image_name }}.img"
-
-    - name: Unzip OS image
-      unarchive:
-        src: "{{ image_folder }}/{{ image_name }}.zip"
-        dest: "{{ image_folder }}"
-        creates: "{{ image_path }}"
 
     - name: List the loop device(s) associated with image
       command: "losetup --output=NAME --associated {{image_path}}"

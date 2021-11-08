@@ -44,6 +44,8 @@ jobs:
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
           echo "==> Running get_raspios playbook..."
+          # ${ANSIBLE} --extra-vars is_64_bit=true \
+          #           playbooks/get_raspios.yml
           ${ANSIBLE} playbooks/get_raspios.yml
 
           echo "==> Running mount_raspios playbook..."
