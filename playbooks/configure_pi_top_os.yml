@@ -40,6 +40,10 @@
     # See 'docs/BUILD_ID_SCHEMA.txt' for more information #
     #######################################################
 
+    - shell: 'dpkg -s pt-os-version'
+
+    - shell: 'dpkg -L pt-os-version'
+
     - name: Extract pi-topOS version from pt-os version file for build ID
       slurp:
         src: /etc/pi-top_os_version
