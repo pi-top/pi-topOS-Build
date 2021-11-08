@@ -36,30 +36,17 @@
         verbosity: 2
 
     - name: List all block device info
-      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}"
+      shell: "lsblk --output FSTYPE,UUID,SIZE,PARTUUID '{{ loop_devices.stdout_lines[-1] }}'"
       register: fstab_info_all
 
     - debug:
         var: fstab_info_all
         verbosity: 2
 
-    - name: Get block device info for recovery
-      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "^recovery"
-      register: fstab_info_recovery
-
-    - name: Get block device info for boot
-      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "^boot"
-      register: fstab_info_boot
-
-    - name: Get block device info for rootfs
-      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "^rootfs"
-      register: fstab_info_rootfs
-
     - set_fact:
         recovery:
-          label: "{{ fstab_info_recovery.stdout_lines[0].split()[0] }}"
-          fstype: "{{ fstab_info_recovery.stdout_lines[0].split()[1] }}"
-          partuuid: "{{ fstab_info_recovery.stdout_lines[0].split()[4] }}"
+          fstype: "{{ fstab_info_all.stdout_lines[2].split()[0] }}"
+          partuuid: "{{ fstab_info_all.stdout_lines[2].split()[3] }}"
 
     - debug:
         var: recovery
@@ -67,9 +54,8 @@
 
     - set_fact:
         boot:
-          label: "{{ fstab_info_boot.stdout_lines[0].split()[0] }}"
-          fstype: "{{ fstab_info_boot.stdout_lines[0].split()[1] }}"
-          partuuid: "{{ fstab_info_boot.stdout_lines[0].split()[4] }}"
+          fstype: "{{ fstab_info_all.stdout_lines[4].split()[0] }}"
+          partuuid: "{{ fstab_info_all.stdout_lines[4].split()[3] }}"
 
     - debug:
         var: boot
@@ -77,9 +63,8 @@
 
     - set_fact:
         rootfs:
-          label: "{{ fstab_info_rootfs.stdout_lines[0].split()[0] }}"
-          fstype: "{{ fstab_info_rootfs.stdout_lines[0].split()[1] }}"
-          partuuid: "{{ fstab_info_rootfs.stdout_lines[0].split()[4] }}"
+          fstype: "{{ fstab_info_all.stdout_lines[5].split()[0] }}"
+          partuuid: "{{ fstab_info_all.stdout_lines[5].split()[3] }}"
 
     - debug:
         var: rootfs
