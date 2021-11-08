@@ -31,14 +31,6 @@
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
 
-    - name: List the loop device(s) associated with image
-      command: "losetup --output=NAME --associated {{image_path}}"
-      register: loop_devices
-
-    - debug:
-        var: loop_devices
-        verbosity: 2
-
     - name: blkid boot
       shell: "blkid -l -o export -t LABEL='boot'"
       register: blkid_boot_stdout

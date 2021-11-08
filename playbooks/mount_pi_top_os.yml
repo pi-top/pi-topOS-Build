@@ -14,10 +14,6 @@
     - set_fact:
         image_path: "{{ image_folder }}{{ image_name }}.img"
 
-    #    - name: Confirm qemu version is ok, stops obtuse errors
-    #      shell: qemu-system-x86_64 --version | head -n 1| cut -d' ' -f 4
-    #
-
     - name: List the loop devices associated with image
       command: "losetup --output=NAME --associated {{image_path}}"
       register: loop_device_check
@@ -26,14 +22,6 @@
       command: "partx --add --verbose {{image_path}}"
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
-
-    # - name: List the loop devices associated with image
-    #   command: "losetup --output=NAME --associated {{image_path}}"
-    #   register: loop_devices
-
-    # - debug:
-    #     var: loop_devices
-    #     verbosity: 2
 
     - name: blkid recovery
       shell: "blkid -l -o export -t LABEL='recovery'"
