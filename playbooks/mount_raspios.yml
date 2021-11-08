@@ -39,28 +39,29 @@
         var: loop_devices
         verbosity: 2
 
-    - name: List out the required info, to build an fstab/command for mount
-      # It's easier to do the filtering here
-      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "{{ loop_devices.stdout_lines[-1] | basename }}" | sort
-      register: fstab_info
+    - name: blkid boot
+      shell: "blkid -l -o export -t LABEL='boot'"
+      register: blkid_boot_stdout
 
     - debug:
-        var: fstab_info
+        var: blkid_boot_stdout
         verbosity: 2
 
-    # We've greped and sorted so it will always be boot, rootfs
+    - name: blkid rootfs
+      shell: "blkid -l -o export -t LABEL='rootfs'"
+      register: blkid_rootfs_stdout
+
+    - debug:
+        var: blkid_rootfs_stdout
+        verbosity: 2
+
     - set_fact:
         boot:
-          label: "{{ fstab_info.stdout_lines[0].split()[0] }}"
-          fstype: "{{ fstab_info.stdout_lines[0].split()[1] }}"
-          partuuid: "{{ fstab_info.stdout_lines[0].split()[4] }}"
-
-
-    - set_fact:
+          fstype: "{{ blkid_boot_stdout.stdout_lines[-2] }}"
+          partuuid_line: "{{ blkid_boot_stdout.stdout_lines[-1] }}"
         rootfs:
-          label: "{{ fstab_info.stdout_lines[1].split()[0] }}"
-          fstype: "{{ fstab_info.stdout_lines[1].split()[1] }}"
-          partuuid: "{{ fstab_info.stdout_lines[1].split()[4] }}"
+          fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2] }}"
+          partuuid_line: "{{ blkid_rootfs_stdout.stdout_lines[-1] }}"
 
     - debug:
         var: boot
