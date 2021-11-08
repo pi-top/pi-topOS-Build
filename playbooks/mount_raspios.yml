@@ -57,10 +57,10 @@
 
     - set_fact:
         boot:
-          fstype: "{{ blkid_boot_stdout.stdout_lines[-2] }}"
+          fstype: "{{ blkid_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
           partuuid_line: "{{ blkid_boot_stdout.stdout_lines[-1] }}"
         rootfs:
-          fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2] }}"
+          fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
           partuuid_line: "{{ blkid_rootfs_stdout.stdout_lines[-1] }}"
 
     - debug:
