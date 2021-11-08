@@ -90,7 +90,7 @@
       become: true
       mount:
         path: "{{ mount_point }}"
-        src: "PARTUUID={{ rootfs.partuuid }}"
+        src: "{{ rootfs.partuuid_line }}"
         fstype: "{{ rootfs.fstype }}"
         fstab: /tmp/raspi-os-fstab
         opts: defaults,noatime
@@ -100,7 +100,7 @@
       become: true
       mount:
         path: "{{ mount_point }}/boot"
-        src: "PARTUUID={{ boot.partuuid }}"
+        src: "{{ boot.partuuid_line }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/raspi-os-fstab
         opts: defaults
