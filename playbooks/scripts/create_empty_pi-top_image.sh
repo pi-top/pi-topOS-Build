@@ -247,3 +247,10 @@ sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOT
 
 echo "New /boot/cmdline.txt :"
 cat "${pi_top_dir}/boot/cmdline.txt"
+
+echo "=== Checking if ${new_image_file} is already mounted ==="
+if mount | grep -q "$pi_top_dir"; then
+	umount --detach-loop --recursive "$pi_top_dir"
+else
+	echo "Nothing to unmount"
+fi

@@ -12,17 +12,15 @@ on:
 env:
   DISTRO_NAME: "bullseye"
   REPO_NAME: "experimental"
-
+  RASPI_OS_IMG: "2021-10-30-raspios-bullseye-armhf"
+  RASPI_OS_URL: "https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2021-11-08/2021-10-30-raspios-bullseye-armhf.zip"
+  # 64-bit:
+  # RASPI_OS_IMG: 2021-10-30-raspios-bullseye-arm64
+  # RASPI_OS_URL: https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64.zip
 jobs:
   build:
     runs-on: ubuntu-20.04
     steps:
-      # Fixes https://github.com/pi-top/pi-topOS-ansible-playbook/issues/18
-      - uses: rokroskar/workflow-run-cleanup-action@v0.3.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEBUG: TRUE
-
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v1.2.1
 
@@ -44,10 +42,13 @@ jobs:
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
           echo "==> Running get_raspios playbook..."
-          ${ANSIBLE} playbooks/get_raspios.yml
+          ${ANSIBLE} --extra-vars raspi_os_url=${{ env.RASPI_OS_URL }} \
+                     --extra-vars image_name=${{ env.RASPI_OS_IMG }} \
+                     playbooks/get_raspios.yml
 
           echo "==> Running mount_raspios playbook..."
-          ${ANSIBLE} playbooks/mount_raspios.yml
+          ${ANSIBLE} --extra-vars image_name=${{ env.RASPI_OS_IMG }} \
+                     playbooks/mount_raspios.yml
 
           echo "==> Running create_pi_top_os_image playbook..."
           ${ANSIBLE} playbooks/create_pi_top_os_image.yml

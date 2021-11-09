@@ -4,10 +4,18 @@
 
   vars:
     image_folder: ./
-    # image_name: 2021-05-07-raspios-buster-armhf-full
-    image_name: 2021-06-18-raspios-bullseye-armhf
-    mount_point: /tmp/raspi-os
+    # TODO: use 'image_name' on localhost if already defined
+    image_name: 2021-10-30-raspios-bullseye-armhf
+    raspi_os_mount_point: /tmp/raspi-os
   tasks:
+
+    - name: Don't continue if already mounted...
+      stat:
+        path: "{{ raspi_os_mount_point }}/boot"
+      register: raspi_os_file_details
+
+    - meta: end_play
+      when: raspi_os_file_details.stat.exists
 
     - set_fact:
         image_path: "{{ image_folder }}{{ image_name }}.img"
@@ -18,6 +26,8 @@
         dest: "{{ image_folder }}"
         creates: "{{ image_path }}"
 
+    # Ensure that a loopback device is associated with image
+
     - name: List the loop device(s) associated with image
       command: "losetup --output=NAME --associated {{image_path}}"
       register: loop_device_check
@@ -25,42 +35,38 @@
     - name: Create a new loopback device
       command: "losetup -f"
       become: true
+      when: loop_device_check.stdout_lines[1] is not defined
 
     - name: If none, mount all the partitions to a loop device
       command: "partx --add --verbose {{image_path}}"
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
 
-    - name: List the loop device(s) associated with image
-      command: "losetup --output=NAME --associated {{image_path}}"
-      register: loop_devices
+    # Mount loopback device to mountpoint
+
+    - name: blkid raspi boot
+      shell: "blkid -l -o export -t LABEL='boot'"
+      register: blkid_raspi_boot_stdout
 
     - debug:
-        var: loop_devices
+        var: blkid_raspi_boot_stdout
         verbosity: 2
 
-    - name: List out the required info, to build an fstab/command for mount
-      # It's easier to do the filtering here
-      shell: lsblk --output LABEL,FSTYPE,UUID,SIZE,PARTUUID,PKNAME "{{ loop_devices.stdout_lines[-1] }}" | grep "{{ loop_devices.stdout_lines[-1] | basename }}" | sort
-      register: fstab_info
+    - name: blkid raspi rootfs
+      shell: "blkid -l -o export -t LABEL='rootfs'"
+      register: blkid_raspi_rootfs_stdout
 
     - debug:
-        var: fstab_info
+        var: blkid_raspi_rootfs_stdout
         verbosity: 2
 
-    # We've greped and sorted so it will always be boot, rootfs
     - set_fact:
         boot:
-          label: "{{ fstab_info.stdout_lines[0].split()[0] }}"
-          fstype: "{{ fstab_info.stdout_lines[0].split()[1] }}"
-          partuuid: "{{ fstab_info.stdout_lines[0].split()[4] }}"
-
-
-    - set_fact:
+          fstype: "{{ blkid_raspi_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_raspi_boot_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
         rootfs:
-          label: "{{ fstab_info.stdout_lines[1].split()[0] }}"
-          fstype: "{{ fstab_info.stdout_lines[1].split()[1] }}"
-          partuuid: "{{ fstab_info.stdout_lines[1].split()[4] }}"
+          fstype: "{{ blkid_raspi_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_raspi_rootfs_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
 
     - debug:
         var: boot
@@ -70,25 +76,16 @@
         var: rootfs
         verbosity: 2
 
-    # Always unmount image, this means create mount point works correctly
-    # it a quick and easy way to enable re-running without errors
-    - name: Unmount image
-      command: "umount -lf {{ mount_point }}"
-      become: true
-      ignore_errors: true
-
-    # When Raspberry Pi OS is mounted to this point it messes up how ansible checks if the directory exists
-    # it should be skipped if the directory is mounted
     - name: Create mount point
       file:
-        path: "{{mount_point}}"
+        path: "{{raspi_os_mount_point}}"
         state: directory
         recurse: true
 
     - name: Mount rootfs
       become: true
       mount:
-        path: "{{ mount_point }}"
+        path: "{{ raspi_os_mount_point }}"
         src: "PARTUUID={{ rootfs.partuuid }}"
         fstype: "{{ rootfs.fstype }}"
         fstab: /tmp/raspi-os-fstab
@@ -98,45 +95,30 @@
     - name: Mount boot
       become: true
       mount:
-        path: "{{ mount_point }}/boot"
+        path: "{{ raspi_os_mount_point }}/boot"
         src: "PARTUUID={{ boot.partuuid }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/raspi-os-fstab
         opts: defaults
         state: mounted
 
-    # # None of this is required since we're not actually chrooting into the image
-    # - name: Mount proc
-    #   command: mount -t proc /proc "{{ mount_point }}/proc"
-    #   args:
-    #     warn: false
-
-    # - name: Mount dev
-    #   command: mount -t sysfs /sys "{{ mount_point }}/sys"
-    #   args:
-    #     warn: false
-
-    # - name: Mount dev
-    #   command: mount -o bind /dev "{{ mount_point }}/dev"
-    #   args:
-    #     warn: false
-
-    # Explanation of why this needs to be there https://wiki.debian.org/QemuUserEmulation
+    # Enable chroot to ARM: https://wiki.debian.org/QemuUserEmulation
     - name: Copy qemu-arm-static to Raspberry Pi OS to enable chrooting
       become: true
       copy:
         src: /usr/bin/qemu-arm-static
-        dest: "{{ mount_point }}/usr/bin/qemu-arm-static"
+        dest: "{{ raspi_os_mount_point }}/usr/bin/qemu-arm-static"
         mode: '0755'
         remote_src: true
 
-    # # https://bugs.launchpad.net/qemu/+bug/1813034
-    # # https://patchwork.kernel.org/patch/10807531/
-    # # https://www.raspberrypi.org/forums/viewtopic.php?t=235594
     # 'raspi-copies-and-fills' does not support host architecture, and this generates lots of warnings.
-    # We move the file until the end to prevent these
+    #   - We move the file until the end to prevent these
+    #
+    # https://bugs.launchpad.net/qemu/+bug/1813034
+    # https://patchwork.kernel.org/patch/10807531/
+    # https://www.raspberrypi.org/forums/viewtopic.php?t=235594
     - name: Move preload file to avoid noisy build
       become: true
-      shell: "mv {{ mount_point }}/etc/ld.so.preload {{ mount_point }}/etc/ld.so.preload.bak"
+      shell: "mv {{ raspi_os_mount_point }}/etc/ld.so.preload {{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
       args:
-        creates: "{{ mount_point }}/etc/ld.so.preload.bak"
+        creates: "{{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
