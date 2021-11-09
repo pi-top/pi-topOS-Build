@@ -9,6 +9,14 @@
     mount_point: /tmp/raspi-os
   tasks:
 
+    - name: Don't continue if already mounted...
+      stat:
+        path: "{{ mount_point }}/boot"
+      register: raspi_os_file_details
+
+    - meta: end_play
+      when: raspi_os_file_details.stat.exists
+
     - set_fact:
         image_path: "{{ image_folder }}{{ image_name }}.img"
 
@@ -31,29 +39,29 @@
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
 
-    - name: blkid boot
+    - name: blkid raspi boot
       shell: "blkid -l -o export -t LABEL='boot'"
-      register: blkid_boot_stdout
+      register: blkid_raspi_boot_stdout
 
     - debug:
-        var: blkid_boot_stdout
+        var: blkid_raspi_boot_stdout
         verbosity: 2
 
-    - name: blkid rootfs
+    - name: blkid raspi rootfs
       shell: "blkid -l -o export -t LABEL='rootfs'"
-      register: blkid_rootfs_stdout
+      register: blkid_raspi_rootfs_stdout
 
     - debug:
-        var: blkid_rootfs_stdout
+        var: blkid_raspi_rootfs_stdout
         verbosity: 2
 
     - set_fact:
         boot:
-          fstype: "{{ blkid_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid: "{{ blkid_boot_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
+          fstype: "{{ blkid_raspi_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_raspi_boot_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
         rootfs:
-          fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid: "{{ blkid_rootfs_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
+          fstype: "{{ blkid_raspi_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_raspi_rootfs_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
 
     - debug:
         var: boot

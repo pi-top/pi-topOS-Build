@@ -8,7 +8,17 @@
 
   tasks:
 
+    - name: Don't continue if already mounted...
+      stat:
+        path: "{{ mount_point }}/recovery"
+      register: pt_os_file_details
+
+    - meta: end_play
+      when: pt_os_file_details.stat.exists
+
+
     - set_fact:
+        # TODO: handle this globally
         image_name: new-image
 
     - set_fact:
@@ -23,40 +33,40 @@
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
 
-    - name: blkid recovery
+    - name: blkid ptos recovery
       shell: "blkid -l -o export -t LABEL='recovery'"
-      register: blkid_recovery_stdout
+      register: blkid_pt_os_recovery_stdout
 
     - debug:
-        var: blkid_recovery_stdout
+        var: blkid_pt_os_recovery_stdout
         verbosity: 2
 
-    - name: blkid boot
+    - name: blkid ptos boot
       shell: "blkid -l -o export -t LABEL='boot'"
-      register: blkid_boot_stdout
+      register: blkid_pt_os_boot_stdout
 
     - debug:
-        var: blkid_boot_stdout
+        var: blkid_pt_os_boot_stdout
         verbosity: 2
 
-    - name: blkid rootfs
+    - name: blkid ptos rootfs
       shell: "blkid -l -o export -t LABEL='rootfs'"
-      register: blkid_rootfs_stdout
+      register: blkid_pt_os_rootfs_stdout
 
     - debug:
-        var: blkid_rootfs_stdout
+        var: blkid_pt_os_rootfs_stdout
         verbosity: 2
 
     - set_fact:
         recovery:
-          fstype: "{{ blkid_recovery_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid: "{{ blkid_recovery_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
+          fstype: "{{ blkid_pt_os_recovery_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_pt_os_recovery_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
         boot:
-          fstype: "{{ blkid_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid: "{{ blkid_boot_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
+          fstype: "{{ blkid_pt_os_boot_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_pt_os_boot_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
         rootfs:
-          fstype: "{{ blkid_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
-          partuuid: "{{ blkid_rootfs_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
+          fstype: "{{ blkid_pt_os_rootfs_stdout.stdout_lines[-2].replace('TYPE=', '') }}"
+          partuuid: "{{ blkid_pt_os_rootfs_stdout.stdout_lines[-1].replace('PARTUUID=', '') }}"
 
     - debug:
         var: recovery
