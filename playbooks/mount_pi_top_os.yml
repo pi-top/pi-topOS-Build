@@ -1,16 +1,18 @@
+# - import_playbook: create_pi_top_os_image.yml
+
 - hosts: localhost
   become_method: sudo
   gather_facts: false
 
   vars:
     image_folder: ./
-    mount_point: /tmp/pi-top-os
+    pt_os_mount_point: /tmp/pi-top-os
 
   tasks:
 
     - name: Don't continue if already mounted...
       stat:
-        path: "{{ mount_point }}/recovery"
+        path: "{{ pt_os_mount_point }}/dev/pts"
       register: pt_os_file_details
 
     - meta: end_play
@@ -80,28 +82,16 @@
         var: rootfs
         verbosity: 2
 
-    # Always unmount image, this means create mount point works correctly
-    # it a quick and easy way to enable re-running without errors
-    - name: Unmount image
-      shell: "umount --recursive --detach-loop {{ mount_point }}"
-      become: true
-      args:
-        executable: /bin/bash
-      # This is lazy way to avoid checking if something is already mounted
-      ignore_errors: true
-
-    # When Raspberry Pi OS is mounted to this point it messes up how ansible checks if the directory exists
-    # it should be skipped if the directory is mounted
     - name: Create mount point
       file:
-        path: "{{mount_point}}"
+        path: "{{pt_os_mount_point}}"
         state: directory
         recurse: true
 
     - name: Mount rootfs
       become: true
       mount:
-        path: "{{ mount_point }}"
+        path: "{{ pt_os_mount_point }}"
         src: "PARTUUID={{ rootfs.partuuid }}"
         fstype: "{{ rootfs.fstype }}"
         fstab: /tmp/pi-top-fstab
@@ -111,7 +101,7 @@
     - name: Mount boot
       become: true
       mount:
-        path: "{{ mount_point }}/boot"
+        path: "{{ pt_os_mount_point }}/boot"
         src: "PARTUUID={{ boot.partuuid }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/pi-top-fstab
@@ -121,33 +111,34 @@
     - name: Mount recovery
       become: true
       mount:
-        path: "{{ mount_point }}/recovery"
+        path: "{{ pt_os_mount_point }}/recovery"
         src: "PARTUUID={{ recovery.partuuid }}"
         fstype: "{{ recovery.fstype }}"
         fstab: /tmp/pi-top-fstab
         opts: defaults
         state: mounted
 
+    # Mount Virtual Filesystems
     - name: Mount proc
       become: true
-      command: mount -t proc /proc "{{ mount_point }}/proc"
+      command: mount -t proc /proc "{{ pt_os_mount_point }}/proc"
       args:
         warn: false
 
     - name: Mount sys
       become: true
-      command: mount -t sysfs /sys "{{ mount_point }}/sys"
+      command: mount -t sysfs /sys "{{ pt_os_mount_point }}/sys"
       args:
         warn: false
 
     - name: Mount dev
       become: true
-      command: mount -o bind /dev "{{ mount_point }}/dev"
+      command: mount -o bind /dev "{{ pt_os_mount_point }}/dev"
       args:
         warn: false
 
     - name: Mount dev/pts
       become: true
-      command: mount -o bind /dev/pts "{{ mount_point }}/dev/pts"
+      command: mount -o bind /dev/pts "{{ pt_os_mount_point }}/dev/pts"
       args:
         warn: false

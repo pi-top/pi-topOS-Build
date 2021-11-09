@@ -6,12 +6,12 @@
     image_folder: ./
     # TODO: use 'image_name' on localhost if already defined
     image_name: 2021-10-30-raspios-bullseye-armhf
-    mount_point: /tmp/raspi-os
+    raspi_os_mount_point: /tmp/raspi-os
   tasks:
 
     - name: Don't continue if already mounted...
       stat:
-        path: "{{ mount_point }}/boot"
+        path: "{{ raspi_os_mount_point }}/boot"
       register: raspi_os_file_details
 
     - meta: end_play
@@ -74,7 +74,7 @@
     # Always unmount image, this means create mount point works correctly
     # it a quick and easy way to enable re-running without errors
     - name: Unmount image
-      command: "umount -lf {{ mount_point }}"
+      command: "umount -lf {{ raspi_os_mount_point }}"
       become: true
       ignore_errors: true
 
@@ -82,14 +82,14 @@
     # it should be skipped if the directory is mounted
     - name: Create mount point
       file:
-        path: "{{mount_point}}"
+        path: "{{raspi_os_mount_point}}"
         state: directory
         recurse: true
 
     - name: Mount rootfs
       become: true
       mount:
-        path: "{{ mount_point }}"
+        path: "{{ raspi_os_mount_point }}"
         src: "PARTUUID={{ rootfs.partuuid }}"
         fstype: "{{ rootfs.fstype }}"
         fstab: /tmp/raspi-os-fstab
@@ -99,7 +99,7 @@
     - name: Mount boot
       become: true
       mount:
-        path: "{{ mount_point }}/boot"
+        path: "{{ raspi_os_mount_point }}/boot"
         src: "PARTUUID={{ boot.partuuid }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/raspi-os-fstab
@@ -108,17 +108,17 @@
 
     # # None of this is required since we're not actually chrooting into the image
     # - name: Mount proc
-    #   command: mount -t proc /proc "{{ mount_point }}/proc"
+    #   command: mount -t proc /proc "{{ raspi_os_mount_point }}/proc"
     #   args:
     #     warn: false
 
     # - name: Mount dev
-    #   command: mount -t sysfs /sys "{{ mount_point }}/sys"
+    #   command: mount -t sysfs /sys "{{ raspi_os_mount_point }}/sys"
     #   args:
     #     warn: false
 
     # - name: Mount dev
-    #   command: mount -o bind /dev "{{ mount_point }}/dev"
+    #   command: mount -o bind /dev "{{ raspi_os_mount_point }}/dev"
     #   args:
     #     warn: false
 
@@ -127,7 +127,7 @@
       become: true
       copy:
         src: /usr/bin/qemu-arm-static
-        dest: "{{ mount_point }}/usr/bin/qemu-arm-static"
+        dest: "{{ raspi_os_mount_point }}/usr/bin/qemu-arm-static"
         mode: '0755'
         remote_src: true
 
@@ -138,6 +138,6 @@
     # We move the file until the end to prevent these
     - name: Move preload file to avoid noisy build
       become: true
-      shell: "mv {{ mount_point }}/etc/ld.so.preload {{ mount_point }}/etc/ld.so.preload.bak"
+      shell: "mv {{ raspi_os_mount_point }}/etc/ld.so.preload {{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
       args:
-        creates: "{{ mount_point }}/etc/ld.so.preload.bak"
+        creates: "{{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
