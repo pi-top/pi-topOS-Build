@@ -26,6 +26,8 @@
         dest: "{{ image_folder }}"
         creates: "{{ image_path }}"
 
+    # Ensure that a loopback device is associated with image
+
     - name: List the loop device(s) associated with image
       command: "losetup --output=NAME --associated {{image_path}}"
       register: loop_device_check
@@ -33,11 +35,14 @@
     - name: Create a new loopback device
       command: "losetup -f"
       become: true
+      when: loop_device_check.stdout_lines[1] is not defined
 
     - name: If none, mount all the partitions to a loop device
       command: "partx --add --verbose {{image_path}}"
       become: true
       when: loop_device_check.stdout_lines[1] is not defined
+
+    # Mount loopback device to mountpoint
 
     - name: blkid raspi boot
       shell: "blkid -l -o export -t LABEL='boot'"
@@ -71,15 +76,6 @@
         var: rootfs
         verbosity: 2
 
-    # Always unmount image, this means create mount point works correctly
-    # it a quick and easy way to enable re-running without errors
-    - name: Unmount image
-      command: "umount -lf {{ raspi_os_mount_point }}"
-      become: true
-      ignore_errors: true
-
-    # When Raspberry Pi OS is mounted to this point it messes up how ansible checks if the directory exists
-    # it should be skipped if the directory is mounted
     - name: Create mount point
       file:
         path: "{{raspi_os_mount_point}}"
@@ -106,23 +102,7 @@
         opts: defaults
         state: mounted
 
-    # # None of this is required since we're not actually chrooting into the image
-    # - name: Mount proc
-    #   command: mount -t proc /proc "{{ raspi_os_mount_point }}/proc"
-    #   args:
-    #     warn: false
-
-    # - name: Mount dev
-    #   command: mount -t sysfs /sys "{{ raspi_os_mount_point }}/sys"
-    #   args:
-    #     warn: false
-
-    # - name: Mount dev
-    #   command: mount -o bind /dev "{{ raspi_os_mount_point }}/dev"
-    #   args:
-    #     warn: false
-
-    # Explanation of why this needs to be there https://wiki.debian.org/QemuUserEmulation
+    # Enable chroot to ARM: https://wiki.debian.org/QemuUserEmulation
     - name: Copy qemu-arm-static to Raspberry Pi OS to enable chrooting
       become: true
       copy:
@@ -131,11 +111,12 @@
         mode: '0755'
         remote_src: true
 
-    # # https://bugs.launchpad.net/qemu/+bug/1813034
-    # # https://patchwork.kernel.org/patch/10807531/
-    # # https://www.raspberrypi.org/forums/viewtopic.php?t=235594
     # 'raspi-copies-and-fills' does not support host architecture, and this generates lots of warnings.
-    # We move the file until the end to prevent these
+    #   - We move the file until the end to prevent these
+    #
+    # https://bugs.launchpad.net/qemu/+bug/1813034
+    # https://patchwork.kernel.org/patch/10807531/
+    # https://www.raspberrypi.org/forums/viewtopic.php?t=235594
     - name: Move preload file to avoid noisy build
       become: true
       shell: "mv {{ raspi_os_mount_point }}/etc/ld.so.preload {{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
