@@ -17,6 +17,8 @@ on:
 env:
   DISTRO_NAME: "bullseye"
   REPO_NAME: "experimental"
+  BUILD_DATE: "2021-10-30"
+  RELEASE_DATE: "2021-11-08"
 
 jobs:
   build:
@@ -25,20 +27,25 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - raspi_os_img: "2021-10-30-raspios-bullseye-armhf-lite"
-            raspi_os_url: "https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2021-11-08/2021-10-30-raspios-bullseye-armhf-lite.zip"
+          # 32-bit Lite
+          - build_type_name: "armhf-lite"
+            build_type_dir: "raspios_lite_armhf"
 
-          - raspi_os_img: "2021-10-30-raspios-bullseye-armhf"
-            raspi_os_url: "https://downloads.raspberrypi.org/raspios_armhf/images/raspios_armhf-2021-11-08/2021-10-30-raspios-bullseye-armhf.zip"
+          # 32-bit Regular
+          - build_type_name: "armhf"
+            build_type_dir: "raspios_armhf"
 
-          - raspi_os_img: "2021-10-30-raspios-bullseye-armhf-full"
-            raspi_os_url: "https://downloads.raspberrypi.org/raspios_full_armhf/images/raspios_full_armhf-2021-11-08/2021-10-30-raspios-bullseye-armhf-full.zip"
+          # 32-bit Full
+          - build_type_name: "armhf-full"
+            build_type_dir: "raspios_full_armhf"
 
-          - raspi_os_img: "2021-10-30-raspios-bullseye-arm64-lite"
-            raspi_os_url: "https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64-lite.zip"
+          # 64-bit Lite
+          - build_type_name: "arm64-lite"
+            build_type_dir: "raspios_lite_arm64"
 
-          - raspi_os_img: "2021-10-30-raspios-bullseye-arm64"
-            raspi_os_url: "https://downloads.raspberrypi.org/raspios_arm64/images/raspios_arm64-2021-11-08/2021-10-30-raspios-bullseye-arm64.zip"
+          # 64-bit Regular
+          - build_type_name: "arm64"
+            build_type_dir: "raspios_arm64"
 
     steps:
       - name: GitHub Environment Variables Action
@@ -55,19 +62,24 @@ jobs:
 
       - name: Build
         run: |
+          set -x
+
           export ANSIBLE_FORCE_COLOR=true
           export TERM=xterm-color
           # chroot connection requires running as root
           # 'ansible-playbook' is not in root user's PATH
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
+          image_name="${{ env.BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ matrix.build_type_name }}"
+          url="https://downloads.raspberrypi.org/${{ matrix.build_type_dir }}/images/${{ matrix.build_type_dir }}-${{env.RELEASE_DATE}}/${image_name}.zip"
+
           echo "==> Running get_raspios playbook..."
           ${ANSIBLE} --extra-vars raspi_os_url=${{ matrix.raspi_os_url }} \
-                     --extra-vars image_name=${{ matrix.raspi_os_img }} \
+                     --extra-vars image_name=${image_name} \
                      playbooks/get_raspios.yml
 
           echo "==> Running mount_raspios playbook..."
-          ${ANSIBLE} --extra-vars image_name=${{ matrix.raspi_os_img }} \
+          ${ANSIBLE} --extra-vars image_name=${image_name} \
                      playbooks/mount_raspios.yml
 
           echo "==> Running create_pi_top_os_image playbook..."
