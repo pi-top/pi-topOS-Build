@@ -57,8 +57,6 @@ jobs:
 
       - name: Build
         run: |
-          set -x
-
           export ANSIBLE_FORCE_COLOR=true
           export TERM=xterm-color
           # chroot connection requires running as root
