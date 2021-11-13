@@ -104,11 +104,11 @@
 
     - set_fact:
         qemu_file_path: "/usr/bin/qemu-arm-static"
-        when: "armhf" in image_name
+        when: '"armhf" in image_name'
 
     - set_fact:
         qemu_file_path: "/usr/bin/qemu-aarch64-static"
-        when: "arm64" in image_name
+        when: '"arm64" in image_name'
 
     # https://wiki.debian.org/QemuUserEmulation
     - name: Enable chrooting via qemu-user-static
