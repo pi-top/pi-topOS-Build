@@ -62,12 +62,12 @@ jobs:
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
           echo "==> Running get_raspios playbook..."
-          ${ANSIBLE} --extra-vars raspi_os_url=${{ ${{ matrix.raspi_os_url }} \
-                     --extra-vars image_name=${{ ${{ matrix.raspi_os_img }} \
+          ${ANSIBLE} --extra-vars raspi_os_url=${{ matrix.raspi_os_url }} \
+                     --extra-vars image_name=${{ matrix.raspi_os_img }} \
                      playbooks/get_raspios.yml
 
           echo "==> Running mount_raspios playbook..."
-          ${ANSIBLE} --extra-vars image_name=${{ ${{ matrix.raspi_os_img }} \
+          ${ANSIBLE} --extra-vars image_name=${{ matrix.raspi_os_img }} \
                      playbooks/mount_raspios.yml
 
           echo "==> Running create_pi_top_os_image playbook..."
