@@ -130,4 +130,4 @@
       shell: "mv {{ raspi_os_mount_point }}/etc/ld.so.preload {{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
       args:
         creates: "{{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
-      when: "armhf" in image_name
+      when: '"armhf" in image_name'
