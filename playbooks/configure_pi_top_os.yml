@@ -104,10 +104,10 @@
         src: "patches/{{ item }}.diff"
         basedir: /
         strip: 1
-        loop:
-          - openbox-xdg-autostart-shebang
-          - disable-openbox-session-right-click-menu
-          - dpms-timeout-5mins
+      loop:
+        - openbox-xdg-autostart-shebang
+        - disable-openbox-session-right-click-menu
+        - dpms-timeout-5mins
       when: stat_result.stat.exists
 
     - name: Apply system patches
