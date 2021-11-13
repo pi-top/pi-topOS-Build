@@ -102,16 +102,20 @@
         opts: defaults
         state: mounted
 
-    # TODO: /usr/bin/qemu-arm-static for 32-bit, ??? for arm64?
-    #   Check from 'image_name'
-    # TODO: only move preload if 32-bit
+    - set_fact:
+        qemu_file_path: "/usr/bin/qemu-arm-static"
+        when: "armhf" in image_name
 
-    # Enable chroot to ARM: https://wiki.debian.org/QemuUserEmulation
-    - name: Copy qemu-arm-static to Raspberry Pi OS to enable chrooting
+    - set_fact:
+        qemu_file_path: "/usr/bin/qemu-aarch64-static"
+        when: "arm64" in image_name
+
+    # https://wiki.debian.org/QemuUserEmulation
+    - name: Enable chrooting via qemu-user-static
       become: true
       copy:
-        src: /usr/bin/qemu-arm-static
-        dest: "{{ raspi_os_mount_point }}/usr/bin/qemu-arm-static"
+        src: "{{ qemu_file_path }}"
+        dest: "{{ raspi_os_mount_point }}{{ qemu_file_path }}"
         mode: '0755'
         remote_src: true
 
@@ -126,3 +130,4 @@
       shell: "mv {{ raspi_os_mount_point }}/etc/ld.so.preload {{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
       args:
         creates: "{{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
+      when: "armhf" in image_name

@@ -92,10 +92,10 @@
 ##################
 # System Patches #
 ##################
-      - name: Check if desktop needs patching
-        stat:
-          path: /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
-        register: stat_result
+    - name: Check if desktop needs patching
+      stat:
+        path: /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
+      register: stat_result
 
     - name: Apply desktop patches
       # openbox-xdg-autostart is missing from pi-topOS Lite
