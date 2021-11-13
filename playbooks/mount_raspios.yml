@@ -114,7 +114,7 @@
     - name: Enable chrooting via qemu-user-static
       become: true
       copy:
-        src: "/usr/local/bin/{{ qemu_file }}"
+        src: "/usr/bin/{{ qemu_file }}"
         dest: "{{ raspi_os_mount_point }}/usr/bin/{{ qemu_file }}"
         mode: '0755'
         remote_src: true
