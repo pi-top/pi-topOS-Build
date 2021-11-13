@@ -103,19 +103,25 @@
         state: mounted
 
     - set_fact:
-        qemu_file_path: "/usr/bin/qemu-arm-static"
+        qemu_file: "qemu-arm-static"
         when: '"armhf" in image_name'
 
     - set_fact:
-        qemu_file_path: "/usr/bin/qemu-aarch64-static"
+        qemu_file: "qemu-aarch64-static"
         when: '"arm64" in image_name'
+
+    - name: Download qemu_file
+      get_url:
+        url: "https://github.com/multiarch/qemu-user-static/releases/download/v6.1.0-8/{{ qemu_file }}"
+        dest: "/usr/local/bin/{{ qemu_file }}"
+        mode: '0755'
 
     # https://wiki.debian.org/QemuUserEmulation
     - name: Enable chrooting via qemu-user-static
       become: true
       copy:
-        src: "{{ qemu_file_path }}"
-        dest: "{{ raspi_os_mount_point }}{{ qemu_file_path }}"
+        src: "/usr/local/bin/{{ qemu_file }}"
+        dest: "{{ raspi_os_mount_point }}/usr/bin/{{ qemu_file }}"
         mode: '0755'
         remote_src: true
 
