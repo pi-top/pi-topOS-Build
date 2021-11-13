@@ -57,7 +57,7 @@ jobs:
           image_name="${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ matrix.build_type_name }}"
 
           # e.g. 'arm64-lite' = 'raspios_arm64_lite'
-          build_type_dir="raspios_$(echo ${underlined} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
+          build_type_dir="raspios_$(echo ${{ matrix.build_type_name }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
 
           url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{env.RASPIOS_RELEASE_DATE}}/${image_name}.zip"
 
