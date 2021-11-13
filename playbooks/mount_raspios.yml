@@ -110,12 +110,6 @@
         qemu_file: "qemu-aarch64-static"
       when: '"arm64" in image_name'
 
-    - name: Download qemu_file
-      get_url:
-        url: "https://github.com/multiarch/qemu-user-static/releases/download/v6.1.0-8/{{ qemu_file }}"
-        dest: "/usr/local/bin/{{ qemu_file }}"
-        mode: '0755'
-
     # https://wiki.debian.org/QemuUserEmulation
     - name: Enable chrooting via qemu-user-static
       become: true
