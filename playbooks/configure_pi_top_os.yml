@@ -92,26 +92,40 @@
 ##################
 # System Patches #
 ##################
-    - name: Apply patches
+      - name: Check if desktop needs patching
+        stat:
+          path: /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
+        register: stat_result
+
+    - name: Apply desktop patches
+      # openbox-xdg-autostart is missing from pi-topOS Lite
+      # TODO: create headless OS version that doesn't require these patches
       patch:
-        # TODO: Add -vvv
-        src: "files/patches/{{ item }}"
+        src: "patches/{{ item }}.diff"
+        basedir: /
+        strip: 1
+        loop:
+          - openbox-xdg-autostart-shebang
+          - disable-openbox-session-right-click-menu
+          - dpms-timeout-5mins
+      when: stat_result.stat.exists
+
+    - name: Apply system patches
+      patch:
+        src: "patches/{{ item }}.diff"
         basedir: /
         strip: 1
       loop:
-        - add-post–boot-blinking-cursor.diff
-        - volume-max.diff
-        - dpms-timeout-5mins.diff
-        - disable-openbox-session-right-click-menu.diff
-        - empty-etc-issue.diff
-        - empty-etc-motd.diff
-        - hostname.diff
-        - hosts.diff
-        - source-etc-profile-in-etc-zsh-zprofile.diff
-        - static-ip-on-usb-interface.diff
-        - us-keyboard.diff
-        - us-locale.diff
-        - openbox-xdg-autostart-shebang.diff
+        - add-post–boot-blinking-cursor
+        - volume-max
+        - empty-etc-issue
+        - empty-etc-motd
+        - hostname
+        - hosts
+        - source-etc-profile-in-etc-zsh-zprofile
+        - static-ip-on-usb-interface
+        - us-keyboard
+        - us-locale
 
     - name: Create swapfile
       shell: |
