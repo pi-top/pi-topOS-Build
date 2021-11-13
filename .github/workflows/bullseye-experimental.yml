@@ -74,7 +74,7 @@ jobs:
           url="https://downloads.raspberrypi.org/${{ matrix.build_type_dir }}/images/${{ matrix.build_type_dir }}-${{env.RELEASE_DATE}}/${image_name}.zip"
 
           echo "==> Running get_raspios playbook..."
-          ${ANSIBLE} --extra-vars raspi_os_url=${{ matrix.raspi_os_url }} \
+          ${ANSIBLE} --extra-vars raspi_os_url=${url} \
                      --extra-vars image_name=${image_name} \
                      playbooks/get_raspios.yml
 
