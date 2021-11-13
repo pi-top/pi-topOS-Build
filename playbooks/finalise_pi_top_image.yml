@@ -12,7 +12,7 @@
 
   tasks:
 
-    - name: Remove qemu-arm-static from OS as we have finished chrooting
+    - name: Clean up QEMU chrooting artifacts
       file:
         dest: "/tmp/pi-top-os/usr/bin/qemu-*-static"
         state: absent
