@@ -27,16 +27,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # 32-bit Lite
           - build_type_name: "armhf-lite"
-
-          # 32-bit Regular
           - build_type_name: "armhf"
-
-          # 64-bit Lite
           - build_type_name: "arm64-lite"
-
-          # 64-bit Regular
           - build_type_name: "arm64"
 
     steps:
@@ -64,9 +57,8 @@ jobs:
         id: cache-img
         uses: actions/cache@v2
         with:
-          path: |
-            ./${{ env.IMAGE_NAME }}.zip
-          key: ${{ env.IMAGE_NAME }}
+          path: "**/${{ env.IMAGE_NAME }}.zip"
+          key: "${{ env.IMAGE_NAME }}"
 
       - name: Build
         run: |
