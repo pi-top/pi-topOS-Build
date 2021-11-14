@@ -244,6 +244,7 @@
 
     - name: Set plymouth theme to 'pt-os-bootsplash'
       shell: plymouth-set-default-theme -R pt-os-bootsplash
+      when: stat_result.stat.exists
 
     # openbox configuration is modified to prevent key-presses in openbox-session during onboarding
     - name: Configure openbox environment
