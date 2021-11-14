@@ -105,7 +105,7 @@
       when: openbox_xdg_autostart.stat.exists
 
     - name: Check if desktop needs patching
-       stat:
+      stat:
         path: /etc/X11/xinit/xinitrc
       register: stat_result
 
