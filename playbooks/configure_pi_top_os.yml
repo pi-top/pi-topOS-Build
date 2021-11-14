@@ -144,7 +144,8 @@
       shell: |
         mkdir -p /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
         mv /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
-      creates: "/usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service"
+      args:
+        creates: "/usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service"
       when: notif_srv_stat_result.stat.exists
 
     - name: Enable Onboarding (using symlink)
