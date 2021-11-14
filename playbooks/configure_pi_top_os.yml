@@ -92,14 +92,13 @@
 ##################
 # System Patches #
 ##################
+    # TODO: find better way to determine this
     - name: Check if desktop needs patching
       stat:
-        path: /usr/lib/arm-linux-gnueabihf/openbox-xdg-autostart
+        path: /etc/X11/xinit/xinitrc
       register: stat_result
 
     - name: Apply desktop patches
-      # openbox-xdg-autostart is missing from pi-topOS Lite
-      # TODO: create headless OS version that doesn't require these patches
       patch:
         src: "patches/{{ item }}.diff"
         basedir: /
@@ -139,6 +138,8 @@
       shell: |
         mkdir -p /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
         mv /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
+      creates: "/usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service"
+      when: stat_result.stat.exists
 
     - name: Enable Onboarding (using symlink)
       shell: ln -sf /usr/lib/python3/dist-packages/pt_os_web_portal/resources/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
