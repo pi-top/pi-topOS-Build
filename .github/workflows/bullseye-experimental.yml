@@ -33,9 +33,6 @@ jobs:
           # 32-bit Regular
           - build_type_name: "armhf"
 
-          # 32-bit Full
-          - build_type_name: "armhf-full"
-
           # 64-bit Lite
           - build_type_name: "arm64-lite"
 
@@ -51,6 +48,10 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Get RPi OS image name
+        run: |
+          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ matrix.build_type_name }}" >> $GITHUB_ENV
+
       - name: Install ansible and playbook dependencies
         run: |
           sudo apt-get update && sudo apt-get install -y ansible unzip zerofree
@@ -58,6 +59,16 @@ jobs:
           # qemu-user-static v5.2
           wget https://mirror.ip-projects.de/ubuntu-security/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
           sudo apt install ./qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
+
+      - name: Cache image
+        id: cache-img
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./${{ env.IMAGE_NAME }}.zip
+          key: ${{ env.IMAGE_NAME }}
+
+      if: steps.cache-img.outputs.cache-hit != 'true'
 
       - name: Build
         run: |
@@ -67,20 +78,18 @@ jobs:
           # 'ansible-playbook' is not in root user's PATH
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
-          image_name="${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ matrix.build_type_name }}"
-
           # e.g. 'arm64-lite' = 'raspios_arm64_lite'
           build_type_dir="raspios_$(echo ${{ matrix.build_type_name }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
 
-          url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{env.RASPIOS_RELEASE_DATE}}/${image_name}.zip"
+          url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.zip"
 
           echo "==> Running get_raspios playbook..."
           ${ANSIBLE} --extra-vars raspi_os_url=${url} \
-                     --extra-vars image_name=${image_name} \
+                     --extra-vars image_name=${{ env.IMAGE_NAME }} \
                      playbooks/get_raspios.yml
 
           echo "==> Running mount_raspios playbook..."
-          ${ANSIBLE} --extra-vars image_name=${image_name} \
+          ${ANSIBLE} --extra-vars image_name=${{ env.IMAGE_NAME }} \
                      playbooks/mount_raspios.yml
 
           echo "==> Running create_pi_top_os_image playbook..."

@@ -24,7 +24,7 @@
         image_name: new-image
 
     - set_fact:
-        image_path: "{{ image_folder }}{{ image_name }}.img"
+        image_path: "{{ image_folder }}/{{ image_name }}.img"
 
     - name: List the loop devices associated with image
       command: "losetup --output=NAME --associated {{image_path}}"

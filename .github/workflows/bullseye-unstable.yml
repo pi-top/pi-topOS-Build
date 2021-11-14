@@ -22,9 +22,6 @@ jobs:
           # 32-bit Regular
           - build_type_name: "armhf"
 
-          # 32-bit Full
-          - build_type_name: "armhf-full"
-
           # 64-bit Lite
           - build_type_name: "arm64-lite"
 
