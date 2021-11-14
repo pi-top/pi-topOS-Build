@@ -8,6 +8,7 @@
   vars:
     repo_name: pi-top-os-unstable
     distro_name: bullseye
+    package: pt-os
 
     recovery_mount_to: /boot/.recovery
 
@@ -37,9 +38,9 @@
         filename: "pi-top"
         update_cache: true
 
-    - name: Install pt-os
+    - name: Install top-level package
       apt:
-        name: pt-os
+        name: "{{ package }}"
         update_cache: true
         state: latest
         install_recommends: true
