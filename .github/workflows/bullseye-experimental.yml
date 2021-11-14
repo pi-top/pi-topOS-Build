@@ -112,13 +112,10 @@ jobs:
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
 
-      - name: Get artifact name
-        run: echo "ARTIFACT_NAME=${{ env.REPO_NAME }}-${{ env.DISTRO_NAME }}-${{ github.run_number || github.run_id }}" >> $GITHUB_ENV
-
       - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: ${{ env.REPO_NAME }}-${{ env.DISTRO_NAME }}-${{ github.run_number || github.run_id }}-${{ matrix.build_type_name }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 
