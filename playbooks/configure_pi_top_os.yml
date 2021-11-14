@@ -134,12 +134,18 @@
 ###########################################
 # Onboarding setup: systemd/dbus services #
 ###########################################
-    - name: Disable notifications until onboarding is completed
+    # TODO: find better way to determine this
+    - name: Check if notifications service exists
+      stat:
+        path: /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service
+      register: notif_srv_stat_result
+
+    - name: Disable notifications until onboarding is completed (if necessary)
       shell: |
         mkdir -p /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
         mv /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
       creates: "/usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service"
-      when: stat_result.stat.exists
+      when: notif_srv_stat_result.stat.exists
 
     - name: Enable Onboarding (using symlink)
       shell: ln -sf /usr/lib/python3/dist-packages/pt_os_web_portal/resources/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
@@ -147,6 +153,7 @@
     # Boot to openbox-session by setting priority 99 (higher than LXDE default)
     - name: Set openbox-session as session manager
       shell: update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/openbox-session 99
+      when: stat_result.stat.exists
 
     - name: Disable firmware updater for onboarding (using symlink)
       file:
@@ -234,6 +241,7 @@
         cp /etc/xdg/openbox/rc.xml /home/pi/.config/openbox/rc.xml
         keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
         sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
+      when: stat_result.stat.exists
 
 ############
 # Clean up #
