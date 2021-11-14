@@ -21,7 +21,7 @@
         src: scripts/analyse-build.sh
         dest: /tmp/analyse-build.sh
 
-    - name: Run debtree script
+    - name: Analyse build
       shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
 
 - hosts: localhost
