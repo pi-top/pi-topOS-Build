@@ -68,8 +68,6 @@ jobs:
             ./${{ env.IMAGE_NAME }}.zip
           key: ${{ env.IMAGE_NAME }}
 
-      if: steps.cache-img.outputs.cache-hit != 'true'
-
       - name: Build
         run: |
           export ANSIBLE_FORCE_COLOR=true
