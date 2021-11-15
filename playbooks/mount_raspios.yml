@@ -18,7 +18,7 @@
       when: raspi_os_file_details.stat.exists
 
     - set_fact:
-        image_path: "{{ image_folder }}{{ image_name }}.img"
+        image_path: "{{ image_folder }}/{{ image_name }}.img"
 
     - name: Unzip OS image
       unarchive:
