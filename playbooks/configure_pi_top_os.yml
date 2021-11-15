@@ -99,7 +99,7 @@
         basedir: /
         strip: 1
       loop:
-        - add-post–boot-blinking-cursor.diff
+        - add-post-boot-blinking-cursor.diff
         - volume-max.diff
         - dpms-timeout-5mins.diff
         - disable-openbox-session-right-click-menu.diff
