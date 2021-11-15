@@ -52,13 +52,6 @@ jobs:
           wget https://mirror.ip-projects.de/ubuntu-security/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
           sudo apt install ./qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
 
-      - name: Cache image
-        id: cache-img
-        uses: actions/cache@v2
-        with:
-          path: "**/${{ env.IMAGE_NAME }}.zip"
-          key: "${{ env.IMAGE_NAME }}"
-
       - name: Build
         run: |
           export ANSIBLE_FORCE_COLOR=true
