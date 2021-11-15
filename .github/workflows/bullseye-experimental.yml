@@ -33,12 +33,6 @@ jobs:
           - build_type_name: "armhf"
             top_level_pkg: "pt-os"
 
-          - build_type_name: "arm64-lite"
-            top_level_pkg: "pt-os-lite"
-
-          - build_type_name: "arm64"
-            top_level_pkg: "pt-os-lite"
-
     steps:
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v1.2.1
@@ -60,13 +54,6 @@ jobs:
           wget https://mirror.ip-projects.de/ubuntu-security/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
           sudo apt install ./qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
 
-      - name: Cache image
-        id: cache-img
-        uses: actions/cache@v2
-        with:
-          path: "**/${{ env.IMAGE_NAME }}.zip"
-          key: "${{ env.IMAGE_NAME }}"
-
       - name: Build
         run: |
           export ANSIBLE_FORCE_COLOR=true
@@ -75,9 +62,7 @@ jobs:
           # 'ansible-playbook' is not in root user's PATH
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
-          # e.g. 'arm64-lite' = 'raspios_arm64_lite'
           build_type_dir="raspios_$(echo ${{ matrix.build_type_name }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
-
           url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.zip"
 
           echo "==> Running get_raspios playbook..."
