@@ -95,23 +95,23 @@
     - name: Apply patches
       patch:
         # TODO: Add -vvv
-        src: "patches/{{ item }}"
+        src: "patches/{{ item }}.diff"
         basedir: /
         strip: 1
       loop:
-        - add-post-boot-blinking-cursor.diff
-        - volume-max.diff
-        - dpms-timeout-5mins.diff
-        - disable-openbox-session-right-click-menu.diff
-        - empty-etc-issue.diff
-        - empty-etc-motd.diff
-        - hostname.diff
-        - hosts.diff
-        - source-etc-profile-in-etc-zsh-zprofile.diff
-        - static-ip-on-usb-interface.diff
-        - us-keyboard.diff
-        - us-locale.diff
-        - openbox-xdg-autostart-shebang.diff
+        - add-post-boot-blinking-cursor
+        - volume-max
+        - dpms-timeout-5mins
+        - disable-openbox-session-right-click-menu
+        - empty-etc-issue
+        - empty-etc-motd
+        - hostname
+        - hosts
+        - source-etc-profile-in-etc-zsh-zprofile
+        - static-ip-on-usb-interface
+        - us-keyboard
+        - us-locale
+        - openbox-xdg-autostart-shebang
 
     - name: Create swapfile
       shell: |
