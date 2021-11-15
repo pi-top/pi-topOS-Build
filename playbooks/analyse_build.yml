@@ -16,12 +16,12 @@
   # space to install the dependencies and store the artifacts
 
   tasks:
-    - name: Copy debtree script to remote
+    - name: Copy analyse-build.sh to remote
       copy:
         src: scripts/analyse-build.sh
         dest: /tmp/analyse-build.sh
 
-    - name: Analyse build
+    - name: Run analyse-build.sh
       shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
 
 - hosts: localhost
