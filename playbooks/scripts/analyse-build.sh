@@ -75,4 +75,6 @@ debtree --show-installed pt-os | dot -T png >"${ARTIFACTS_PATH}/${ARTIFACTS_PREF
 
 tree --charset=ascii /etc/systemd/system >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}systemd-tree.txt"
 
+dpkg -l | grep '^ii' | awk '{print $2,$3}' >"${ARTIFACTS_PATH}/${ARTIFACTS_PREFIX}installed-packages.txt"
+
 exit 0
