@@ -95,7 +95,7 @@
     - name: Apply patches
       patch:
         # TODO: Add -vvv
-        src: "files/patches/{{ item }}"
+        src: "patches/{{ item }}"
         basedir: /
         strip: 1
       loop:
