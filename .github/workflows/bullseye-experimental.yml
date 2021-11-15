@@ -27,9 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # armhf-lite
-          # armhf
+          - build_type_name: "armhf-lite"
+            top_level_pkg: "pt-os-lite"
+
           - build_type_name: "armhf"
+            top_level_pkg: "pt-os"
 
     steps:
       - name: GitHub Environment Variables Action
@@ -81,6 +83,7 @@ jobs:
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
                      --extra-vars distro_name=${{ env.DISTRO_NAME }} \
+                     --extra-vars package=${{ matrix.top_level_pkg }} \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
