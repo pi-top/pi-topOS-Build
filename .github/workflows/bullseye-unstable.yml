@@ -80,8 +80,8 @@ jobs:
           echo "==> Running finalise_pi_top_image playbook..."
           ${ANSIBLE} playbooks/finalise_pi_top_image.yml
 
-          # echo "==> Running analyse_build playbook..."
-          # ${ANSIBLE} playbooks/analyse_build.yml
+          echo "==> Running analyse_build playbook..."
+          ${ANSIBLE} playbooks/analyse_build.yml
 
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV

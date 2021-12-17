@@ -124,7 +124,8 @@
         format: zip
       register: zip_result
 
-    - fail:
+    - name: Verify zip
+      fail:
         msg: Files were missing from the output zip
       when: zip_result.missing | length > 0
 
