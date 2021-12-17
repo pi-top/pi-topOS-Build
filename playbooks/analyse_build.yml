@@ -28,6 +28,7 @@
   connection: chroot
   tasks:
     - name: Copy OS metadata files
+      copy:
         src: "{{ item }}"
         dest: artifacts/
         mode: '0755'
