@@ -15,7 +15,7 @@ fi
 ARTIFACTS_PATH="${2:-/tmp/artifacts}"
 
 echo "Getting list of installed pi-top packages..."
-installed_pi_top_packages=($(aptitude search "?origin (pi-top) ?installed" -F %p))
+installed_pi_top_packages=($(/usr/bin/aptitude-curses search "?origin (pi-top) ?installed" -F %p))
 
 generate_package_list() {
   # Packages not picked up properly by parsing apt-cache
