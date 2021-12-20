@@ -23,7 +23,7 @@
     - name: Install pi-topOS as apt source
       # Required to install 'pt-os' from pi-topOS sources in next step
       apt:
-        name: "pi-top-os-{{ repo_name | replace('release','') }}-archive-source"
+        name: "pi-top-os-{{ repo_name | replace('release','') }}-apt-source"
         update_cache: true
         state: latest
         install_recommends: true
