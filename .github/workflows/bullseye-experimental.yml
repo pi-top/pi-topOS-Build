@@ -16,7 +16,7 @@ on:
 
 env:
   DISTRO_NAME: "bullseye"
-  REPO_NAME: "experimental"
+  REPO_NAME: "experimental"  # 'experimental', 'unstable', 'testing', 'release'
   RASPIOS_BUILD_DATE: "2021-10-30"
   RASPIOS_RELEASE_DATE: "2021-11-08"
 
@@ -76,7 +76,6 @@ jobs:
 
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
-                     --extra-vars distro_name=${{ env.DISTRO_NAME }} \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
