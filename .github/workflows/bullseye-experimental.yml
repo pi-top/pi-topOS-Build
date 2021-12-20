@@ -5,7 +5,7 @@ on:
     branches:
       - "**"
     paths:
-      - "playbooks"
+      - "playbooks/**"
       - "inventory"
       - "ansible.cfg"
       - ".github/workflows/bullseye-experimental.yml"
