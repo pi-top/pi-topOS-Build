@@ -81,7 +81,8 @@ jobs:
           ${ANSIBLE} playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
-          ${ANSIBLE} playbooks/analyse_build.yml
+          ${ANSIBLE} --extra-vars build_number=${{ github.run_number || github.run_id }} \
+                     playbooks/analyse_build.yml
 
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
