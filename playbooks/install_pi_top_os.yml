@@ -20,8 +20,7 @@
       retries: 5
       until: apt_status is success
 
-    - name: Install pi-topOS as apt source
-      # Required to install 'pt-os' from pi-topOS sources in next step
+    - name: Install pi-topOS apt source (required to install 'pt-os')
       apt:
         name: "pi-top-os-{{ repo_name | replace('release','') }}-apt-source"
         update_cache: true
