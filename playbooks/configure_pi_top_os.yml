@@ -40,7 +40,7 @@
     # See 'docs/BUILD_ID_SCHEMA.txt' for more information #
     #######################################################
 
-    - name: Extract pi-topOS version from pt-os version file for build ID
+    - name: Extract pi-topOS version from pt-os-version file for build ID
       slurp:
         src: /etc/pi-top_os_version
       register: orig_pt_os_ver
@@ -113,7 +113,7 @@
         - us-locale
         - openbox-xdg-autostart-shebang
 
-    - name: Create swapfile
+    - name: Create larger static swapfile (to speed up first boot)
       shell: |
         sed -i "s|CONF_SWAPSIZE=100|CONF_SWAPSIZE={{ swapfile_size_mb }}|" /etc/dphys-swapfile
         dd if=/dev/zero of=/var/swap bs=1024 count=$((1024 * {{ swapfile_size_mb }}))
@@ -132,11 +132,6 @@
     # Boot to openbox-session by setting priority 99 (higher than LXDE default)
     - name: Set openbox-session as session manager
       shell: update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/openbox-session 99
-
-    - name: Disable firmware updater for onboarding (using symlink)
-      file:
-        dest: /etc/systemd/system/graphical.target.wants/pt-firmware-updater.service
-        state: absent
 
     - name: Disable Further Link for onboarding (using symlink)
       file:
