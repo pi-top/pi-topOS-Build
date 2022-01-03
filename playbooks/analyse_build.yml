@@ -39,7 +39,7 @@
         dest: artifacts/
         mode: '0755'
       with_fileglob:
-        - "{{mount_point}}/{{artifacts_path}}/*"
+        - "{{artifacts_path}}/*"
 
     - name: Unmount image
       shell: "umount --force --verbose {{mount_point}}/{{ item }}"
