@@ -29,6 +29,9 @@
 
 - hosts: localhost
   connection: chroot
+  vars:
+    mount_point: /tmp/pi-top-os
+    artifacts_path: /tmp/artifacts
   tasks:
     - name: Copy OS metadata files
       copy:
