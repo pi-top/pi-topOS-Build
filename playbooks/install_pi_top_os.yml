@@ -12,14 +12,14 @@
     recovery_mount_to: /boot/.recovery
 
   tasks:
-    - name: Upgrade Raspberry Pi OS
-      apt:
-        state: latest
-        update_cache: true
-        install_recommends: true
-      register: apt_status
-      retries: 5
-      until: apt_status is success
+    # - name: Upgrade Raspberry Pi OS
+    #   apt:
+    #     state: latest
+    #     update_cache: true
+    #     install_recommends: true
+    #   register: apt_status
+    #   retries: 5
+    #   until: apt_status is success
 
     - name: Add pi-top master apt key
       apt_key:
@@ -37,16 +37,16 @@
         filename: "pi-top"
         update_cache: true
 
-    - name: Install pt-os
-      apt:
-        name: pt-os
-        update_cache: true
-        state: latest
-        install_recommends: true
-        default_release: "{{ distro_name }}"
-      register: apt_status
-      retries: 5
-      until: apt_status is success
+    # - name: Install pt-os
+    #   apt:
+    #     name: pt-os
+    #     update_cache: true
+    #     state: latest
+    #     install_recommends: true
+    #     default_release: "{{ distro_name }}"
+    #   register: apt_status
+    #   retries: 5
+    #   until: apt_status is success
 
 #########################
 # Recovery installation #
@@ -90,10 +90,10 @@
         mode: '0755'
 
     # TODO: move to a new stage
-    - name: Update all packages to the latest version
-      apt:
-        upgrade: dist
-        update_cache: true
-      register: apt_status
-      retries: 5
-      until: apt_status is success
+    # - name: Update all packages to the latest version
+    #   apt:
+    #     upgrade: dist
+    #     update_cache: true
+    #   register: apt_status
+    #   retries: 5
+    #   until: apt_status is success
