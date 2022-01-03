@@ -22,10 +22,8 @@
         src: scripts/analyse-build.sh
         dest: /tmp/analyse-build.sh
 
-    # TODO: fix - "aptitude not installed"
-    #
-    # - name: Run analyse-build.sh
-    #   shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
+    - name: Run analyse-build.sh
+      shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
 
 - hosts: localhost
   connection: chroot
