@@ -15,7 +15,7 @@
         path: "{{ pt_os_mount_point }}/dev/pts"
       register: pt_os_file_details
 
-    - meta: end_play
+    - meta: end_host
       when: pt_os_file_details.stat.exists
 
 

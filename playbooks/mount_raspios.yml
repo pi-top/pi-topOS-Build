@@ -14,7 +14,7 @@
         path: "{{ raspi_os_mount_point }}/boot"
       register: raspi_os_file_details
 
-    - meta: end_play
+    - meta: end_host
       when: raspi_os_file_details.stat.exists
 
     - set_fact:
