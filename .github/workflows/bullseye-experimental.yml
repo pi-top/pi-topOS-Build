@@ -27,9 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # armhf-lite
-          # armhf
+          - build_type_name: "armhf-lite"
+            top_level_pkg: "pt-os-lite"
+
           - build_type_name: "armhf"
+            top_level_pkg: "pt-os"
 
     steps:
       - name: GitHub Environment Variables Action
@@ -46,7 +48,11 @@ jobs:
 
       - name: Install ansible and playbook dependencies
         run: |
-          sudo apt-get update && sudo apt-get install -y ansible qemu-user-static unzip zerofree
+          sudo apt-get update && sudo apt-get install -y ansible unzip zerofree
+
+          # qemu-user-static v5.2
+          wget https://mirror.ip-projects.de/ubuntu-security/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
+          sudo apt install ./qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
 
       - name: Build
         run: |
@@ -77,6 +83,7 @@ jobs:
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
                      --extra-vars distro_name=${{ env.DISTRO_NAME }} \
+                     --extra-vars package=${{ matrix.top_level_pkg }} \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
