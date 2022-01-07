@@ -9,6 +9,9 @@ on:
       - "inventory"
       - "ansible.cfg"
       - ".github/workflows/bullseye-experimental.yml"
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
   schedule:
     # Run daily at midnight
