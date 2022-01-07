@@ -7,7 +7,7 @@
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
     build_id_schema_version: 1
-    build_repo_name: pi-top-os-unstable
+    build_repo_name: unstable
     build_repo_commit: unknown
     build_repo_commit_short: unknown
     build_number: 0
@@ -47,7 +47,7 @@
 
     - name: Generate build ID
       set_fact:
-        build_id: "S{{ build_id_schema_version }}_B{{ build_repo_name | replace('pi-top-os-','') }}_D{{ ansible_date_time.date }}_P{{ orig_pt_os_ver['content'] | b64decode | trim }}_#{{ build_repo_commit_short }}_R{{ build_number }}"
+        build_id: "S{{ build_id_schema_version }}_B{{ build_repo_name }}_D{{ ansible_date_time.date }}_P{{ orig_pt_os_ver['content'] | b64decode | trim }}_#{{ build_repo_commit_short }}_R{{ build_number }}"
 
     - name: Replace build info placeholders in /boot/pt-issue.txt
       replace:

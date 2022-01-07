@@ -6,8 +6,7 @@
     # For some reason ansible only picks up the sbin's by default, which causes apt-key to fail
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
-    repo_name: pi-top-os-unstable
-    distro_name: bullseye
+    repo_name: pi-top-os
 
     recovery_mount_to: /boot/.recovery
 
@@ -21,21 +20,15 @@
       retries: 5
       until: apt_status is success
 
-    - name: Add pi-top master apt key
-      apt_key:
-        data: "{{ lookup('file', 'pt-apt.asc') }}"
-        state: present
-
-    - name: Add pi-top PackageCloud apt key
-      apt_key:
-        url: "https://packages.pi-top.com/{{ repo_name }}/gpgkey"
-        state: present
-
-    - name: Add pi-top build repository
-      apt_repository:
-        repo: "deb https://packages.pi-top.com/{{ repo_name }}/debian/ {{ distro_name }} main"
-        filename: "pi-top"
+    - name: Install pi-topOS apt source (required to install 'pt-os')
+      apt:
+        name: "pi-top-os-{{ repo_name | replace('release','') }}-apt-source"
         update_cache: true
+        state: latest
+        install_recommends: true
+      register: apt_status
+      retries: 5
+      until: apt_status is success
 
     - name: Install pt-os
       apt:
@@ -43,7 +36,6 @@
         update_cache: true
         state: latest
         install_recommends: true
-        default_release: "{{ distro_name }}"
       register: apt_status
       retries: 5
       until: apt_status is success
