@@ -1,9 +1,9 @@
 name: pi-topOS Testing Bullseye Build
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
   # TODO: remove - added for testing purposes
-  pull_request
+  pull_request:
 
 env:
   DISTRO_NAME: "bullseye"
