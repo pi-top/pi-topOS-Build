@@ -1,22 +1,11 @@
-name: pi-topOS Experimental Bullseye Build
+name: pi-topOS Release Bullseye Build
 
 on:
-  push:
-    branches:
-      - "**"
-    paths:
-      - "playbooks/**"
-      - "inventory"
-      - "ansible.cfg"
-      - ".github/workflows/bullseye-experimental.yml"
   workflow_dispatch:
-  schedule:
-    # Run daily at midnight
-    - cron:  '0 0 * * *'
 
 env:
   DISTRO_NAME: "bullseye"
-  REPO_NAME: "experimental"  # 'experimental', 'unstable', 'testing', 'release'
+  REPO_NAME: "release"  # 'experimental', 'unstable', 'testing', 'release'
   RASPIOS_BUILD_DATE: "2022-01-28"
   RASPIOS_RELEASE_DATE: "2022-01-28"
 
@@ -100,7 +89,7 @@ jobs:
       - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.REPO_NAME }}-${{ env.DISTRO_NAME }}-${{ github.run_number || github.run_id }}-${{ matrix.build_type_name }}
+          name: pi-topOS-${{ env.REPO_NAME }}-${{ env.DISTRO_NAME }}-${{ github.run_number || github.run_id }}-${{ matrix.build_type_name }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 
