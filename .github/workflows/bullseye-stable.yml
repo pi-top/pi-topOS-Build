@@ -1,4 +1,4 @@
-name: pi-topOS Testing Bullseye Build
+name: pi-topOS Release Bullseye Build
 
 on:
   workflow_dispatch:
