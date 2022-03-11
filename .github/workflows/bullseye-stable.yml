@@ -77,7 +77,11 @@ jobs:
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
-          ${ANSIBLE} playbooks/finalise_pi_top_image.yml
+          ${ANSIBLE} --extra-vars distro_name=${{ env.DISTRO_NAME }} \
+                     --extra-vars build_number=${{ github.run_number || github.run_id }} \
+                     --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
+                     --extra-vars architecture="${{ matrix.build_type_name }}" \
+                     playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
           ${ANSIBLE} --extra-vars build_number=${{ github.run_number || github.run_id }} \
