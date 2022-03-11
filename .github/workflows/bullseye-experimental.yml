@@ -116,10 +116,3 @@ jobs:
           path: |
             playbooks/artifacts/*
             !${{ env.ZIP_FILENAME }}
-
-      - name: Upload OS zip to GCS
-        uses: google-github-actions/upload-cloud-storage@v0.4.0
-        with:
-          credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
-          path: ${{ env.ZIP_FILENAME }}
-          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ env.DISTRO_NAME }}/
