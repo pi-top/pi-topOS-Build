@@ -7,7 +7,7 @@ env:
   DISTRO_NAME: "bullseye"
   REPO_NAME: "release"  # 'experimental', 'unstable', 'testing', 'release'
   RASPIOS_BUILD_DATE: "2022-09-22"
-  RASPIOS_RELEASE_DATE: "2022-09-22"
+  RASPIOS_RELEASE_DATE: "2022-09-26"
 
 jobs:
   build:
