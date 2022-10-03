@@ -5,7 +5,7 @@
   vars:
     image_folder: ./
     # TODO: use 'image_name' on localhost if already defined
-    image_name: 2021-10-30-raspios-bullseye-armhf
+    image_name: 2022-09-22-raspios-bullseye-armhf
     raspi_os_mount_point: /tmp/raspi-os
   tasks:
 
@@ -22,7 +22,7 @@
 
     - name: Unzip OS image
       unarchive:
-        src: "{{ image_folder }}/{{ image_name }}.zip"
+        src: "{{ image_folder }}/{{ image_name }}.img.xz"
         dest: "{{ image_folder }}"
         creates: "{{ image_path }}"
 
