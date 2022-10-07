@@ -170,18 +170,18 @@
       shell: |
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
 
-#############################
-# Set username and password #
-#############################
+###############################################################
+# Set user/password/locale/wifi country initial configuration #
+###############################################################
 
-    - name: Copy firstrun.sh script
+    - name: Copy pt-firstrun.sh script
       copy:
-        src: files/firstrun.sh
-        dest: /boot/firstrun.sh
+        src: files/pt-firstrun.sh
+        dest: /boot/pt-firstrun.sh
 
-    - name: Run firstrun.sh
+    - name: Run pt-firstrun.sh
       shell: |
-        echo "$(cat /boot/cmdline.txt) systemd.run=/boot/firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target" > /boot/cmdline.txt
+        echo "$(cat /boot/cmdline.txt) systemd.run=/boot/pt-firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target" > /boot/cmdline.txt
 
 #########################
 # General system config #
