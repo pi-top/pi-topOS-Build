@@ -14,6 +14,9 @@
     build_action_url: unknown
 
     swapfile_size_mb: 512
+    # Created with:
+    # echo 'pi-top' | openssl passwd -5 -stdin -salt 'SomeSalt'
+    password : $5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA
 
 
   tasks:
@@ -180,7 +183,7 @@
 
     - name: Set user & password
       shell: |
-        echo "pi:"'$5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA' > /boot/userconf
+        echo "pi:"'{{ password }}' > /boot/userconf
 
 #########################
 # General system config #
