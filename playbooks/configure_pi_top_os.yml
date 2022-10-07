@@ -171,17 +171,16 @@
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
 
 ###############################################################
-# Set user/password/locale/wifi country initial configuration #
+# Set user/password/wifi country initial configuration #
 ###############################################################
 
-    - name: Copy pt-firstrun.sh script
-      copy:
-        src: files/pt-firstrun.sh
-        dest: /boot/pt-firstrun.sh
-
-    - name: Run pt-firstrun.sh
+    - name: Set wifi-country
       shell: |
-        echo "$(cat /boot/cmdline.txt) systemd.run=/boot/pt-firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target" > /boot/cmdline.txt
+        raspi-config nonint do_wifi_country US || true
+
+    - name: Set user & password
+      shell: |
+        echo "pi:"'$5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA' | chpasswd -e
 
 #########################
 # General system config #
