@@ -15,19 +15,8 @@
 
     swapfile_size_mb: 512
 
-    # Created with :
-    # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
-    password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
 
   tasks:
-############
-# Password #
-############
-    - name: Set pi user password
-      user:
-        name: pi
-        password: "{{ password }}"
-
 ##############
 # Build Info #
 ##############
@@ -180,6 +169,19 @@
       # [    5.713155 ] usb 1-1.4-port2: unable to enumerate USB device
       shell: |
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
+
+#############################
+# Set username and password #
+#############################
+
+    - name: Copy firstrun.sh script
+      copy:
+        src: files/firstrun.sh
+        dest: /boot/firstrun.sh
+
+    - name: Run firstrun.sh
+      shell: |
+        echo "$(cat /boot/cmdline.txt) systemd.run=/boot/firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target" > /boot/cmdline.txt
 
 #########################
 # General system config #
