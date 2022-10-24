@@ -6,8 +6,8 @@ on:
 env:
   DISTRO_NAME: "bullseye"
   REPO_NAME: "unstable"  # 'experimental', 'unstable', 'testing', 'release'
-  RASPIOS_BUILD_DATE: "2022-01-28"
-  RASPIOS_RELEASE_DATE: "2022-01-28"
+  RASPIOS_BUILD_DATE: "2022-09-22"
+  RASPIOS_RELEASE_DATE: "2022-09-26"
 
 jobs:
   build:
@@ -46,7 +46,7 @@ jobs:
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
           build_type_dir="raspios_$(echo ${{ matrix.build_type_name }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
-          url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.zip"
+          url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.img.xz"
 
           echo "==> Running get_raspios playbook..."
           ${ANSIBLE} --extra-vars raspi_os_url=${url} \

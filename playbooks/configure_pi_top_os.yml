@@ -14,20 +14,12 @@
     build_action_url: unknown
 
     swapfile_size_mb: 512
+    # Created with:
+    # echo 'pi-top' | openssl passwd -5 -stdin -salt 'SomeSalt'
+    password : $5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA
 
-    # Created with :
-    # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
-    password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
 
   tasks:
-############
-# Password #
-############
-    - name: Set pi user password
-      user:
-        name: pi
-        password: "{{ password }}"
-
 ##############
 # Build Info #
 ##############
@@ -180,6 +172,18 @@
       # [    5.713155 ] usb 1-1.4-port2: unable to enumerate USB device
       shell: |
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
+
+###############################################################
+# Set user/password/wifi country initial configuration #
+###############################################################
+
+    - name: Set wifi-country
+      shell: |
+        raspi-config nonint do_wifi_country US || true
+
+    - name: Set user & password
+      shell: |
+        echo "pi:"'{{ password }}' > /boot/userconf
 
 #########################
 # General system config #
