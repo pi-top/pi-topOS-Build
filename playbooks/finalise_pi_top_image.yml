@@ -9,7 +9,11 @@
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
     output_directory: artifacts
-
+    build_repo_name: unstable
+    build_number: 0
+    distro_name: bullseye
+    architecture: armhf
+  
   tasks:
 
     - name: Remove qemu-arm-static from OS as we have finished chrooting
@@ -104,31 +108,29 @@
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
     - set_fact:
-        output_image_filename: "{{ ansible_date_time.date }}-pi-topOS.img"
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ architecture }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
     - name: Create a hard link to the image to use as the output filename
       file:
         src: "{{ playbook_dir }}/new-image.img"
-        dest: "{{ output_directory }}/{{ output_image_filename }}"
+        dest: "{{ output_directory }}/{{ output_filename }}.img"
         state: hard
-
-    - set_fact:
-        zip_filename: "pi-topOS_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}.zip"
 
     - name: Compress image into zip
       archive:
         path:
-          - "{{ output_directory }}/{{ output_image_filename }}"
+          - "{{ output_directory }}/{{ output_filename }}.img"
           - "{{ output_directory }}/metadata.txt"
-        dest: "{{ output_directory }}/{{ zip_filename }}"
+        dest: "{{ output_directory }}/{{ output_filename }}.zip"
         format: zip
       register: zip_result
 
-    - fail:
+    - name: Verify zip
+      fail:
         msg: Files were missing from the output zip
       when: zip_result.missing | length > 0
 
     - name: Remove the hard link to avoid any confusion
       file:
-        dest: "{{ output_directory }}/{{ output_image_filename }}"
+        dest: "{{ output_directory }}/{{ output_filename }}"
         state: absent

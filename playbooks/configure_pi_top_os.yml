@@ -7,29 +7,21 @@
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
     build_id_schema_version: 1
-    build_repo_name: pi-top-os-unstable
+    build_repo_name: unstable
     build_repo_commit: unknown
     build_repo_commit_short: unknown
     build_number: 0
     build_action_url: unknown
 
     swapfile_size_mb: 512
+    # Created with:
+    # echo 'pi-top' | openssl passwd -5 -stdin -salt 'SomeSalt'
+    password : $5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA
 
-    # Created with :
-    # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
-    password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
 
     full_install: true
 
   tasks:
-############
-# Password #
-############
-    - name: Set pi user password
-      user:
-        name: pi
-        password: "{{ password }}"
-
 ##############
 # Build Info #
 ##############
@@ -42,14 +34,14 @@
     # See 'docs/BUILD_ID_SCHEMA.txt' for more information #
     #######################################################
 
-    - name: Extract pi-topOS version from pt-os version file for build ID
+    - name: Extract pi-topOS version from pt-os-version file for build ID
       slurp:
         src: /etc/pi-top_os_version
       register: orig_pt_os_ver
 
     - name: Generate build ID
       set_fact:
-        build_id: "S{{ build_id_schema_version }}_B{{ build_repo_name | replace('pi-top-os-','') }}_D{{ ansible_date_time.date }}_P{{ orig_pt_os_ver['content'] | b64decode | trim }}_#{{ build_repo_commit_short }}_R{{ build_number }}"
+        build_id: "S{{ build_id_schema_version }}_B{{ build_repo_name }}_D{{ ansible_date_time.date }}_P{{ orig_pt_os_ver['content'] | b64decode | trim }}_#{{ build_repo_commit_short }}_R{{ build_number }}"
 
     - name: Replace build info placeholders in /boot/pt-issue.txt
       replace:
@@ -124,7 +116,7 @@
         - disable-openbox-session-right-click-menu
         - openbox-xdg-autostart-shebang
 
-    - name: Create swapfile
+    - name: Create larger static swapfile (to speed up first boot)
       shell: |
         sed -i "s|CONF_SWAPSIZE=100|CONF_SWAPSIZE={{ swapfile_size_mb }}|" /etc/dphys-swapfile
         dd if=/dev/zero of=/var/swap bs=1024 count=$((1024 * {{ swapfile_size_mb }}))
@@ -143,11 +135,6 @@
     # Boot to openbox-session by setting priority 99 (higher than LXDE default)
     - name: Set openbox-session as session manager
       shell: update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/openbox-session 99
-
-    - name: Disable firmware updater for onboarding (using symlink)
-      file:
-        dest: /etc/systemd/system/graphical.target.wants/pt-firmware-updater.service
-        state: absent
 
     - name: Disable Further Link for onboarding (using symlink)
       file:
@@ -197,6 +184,18 @@
       shell: |
         echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
 
+###############################################################
+# Set user/password/wifi country initial configuration #
+###############################################################
+
+    - name: Set wifi-country
+      shell: |
+        raspi-config nonint do_wifi_country US || true
+
+    - name: Set user & password
+      shell: |
+        echo "pi:"'{{ password }}' > /boot/userconf
+
 #########################
 # General system config #
 #########################
@@ -230,6 +229,12 @@
         cp /etc/xdg/openbox/rc.xml /home/pi/.config/openbox/rc.xml
         keyboard_binding="<keybind key='A-Tab'> <action name='NextWindow'> <dialog>no</dialog> <bar>no</bar> </action> </keybind>"
         sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
+
+    - name: Enable VNC Server (using symlink)
+      file:
+        dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
+        src: /usr/lib/systemd/system/vncserver-x11-serviced.service
+        state: link
 
 ############
 # Clean up #

@@ -5,9 +5,9 @@ on:
 
 env:
   DISTRO_NAME: "bullseye"
-  REPO_NAME: "pi-top-os-unstable"
-  RASPIOS_BUILD_DATE: "2021-10-30"
-  RASPIOS_RELEASE_DATE: "2021-11-08"
+  REPO_NAME: "unstable"  # 'experimental', 'unstable', 'testing', 'release'
+  RASPIOS_BUILD_DATE: "2022-09-22"
+  RASPIOS_RELEASE_DATE: "2022-09-26"
 
 jobs:
   build:
@@ -46,7 +46,7 @@ jobs:
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
           build_type_dir="raspios_$(echo ${{ matrix.build_type_name }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
-          url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.zip"
+          url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.img.xz"
 
           echo "==> Running get_raspios playbook..."
           ${ANSIBLE} --extra-vars raspi_os_url=${url} \
@@ -65,7 +65,6 @@ jobs:
 
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
-                     --extra-vars distro_name=${{ env.DISTRO_NAME }} \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
@@ -78,18 +77,27 @@ jobs:
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
-          ${ANSIBLE} playbooks/finalise_pi_top_image.yml
+          ${ANSIBLE} --extra-vars distro_name=${{ env.DISTRO_NAME }} \
+                     --extra-vars build_number=${{ github.run_number || github.run_id }} \
+                     --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
+                     --extra-vars architecture="${{ matrix.build_type_name }}" \
+                     playbooks/finalise_pi_top_image.yml
 
-          # echo "==> Running analyse_build playbook..."
-          # ${ANSIBLE} playbooks/analyse_build.yml
+          echo "==> Running analyse_build playbook..."
+          ${ANSIBLE} --extra-vars build_number=${{ github.run_number || github.run_id }} \
+                     playbooks/analyse_build.yml
 
       - name: Get zip filename
         run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
 
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
       - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.REPO_NAME }}-${{ env.DISTRO_NAME }}-${{ github.run_number || github.run_id }}-${{ matrix.build_type_name }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ matrix.build_type_name }}_${{ steps.date.outputs.date }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 

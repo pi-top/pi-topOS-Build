@@ -4,6 +4,7 @@
   gather_facts: true
   become: true
   vars:
+    build_number: 0
     image_name: "pi-topOS"
     mount_point: /tmp/pi-top-os
     artifacts_path: /tmp/artifacts
@@ -21,18 +22,24 @@
         src: scripts/analyse-build.sh
         dest: /tmp/analyse-build.sh
 
-    - name: Run analyse-build.sh
-      shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
+    # TODO: fix - "aptitude not installed"
+    #
+    # - name: Run analyse-build.sh
+    #   shell: '/bin/bash /tmp/analyse-build.sh {{image_name}}_c{{build_number}} {{artifacts_path}}'
 
 - hosts: localhost
   connection: chroot
+  vars:
+    mount_point: /tmp/pi-top-os
+    artifacts_path: /tmp/artifacts
   tasks:
     - name: Copy OS metadata files
+      copy:
         src: "{{ item }}"
         dest: artifacts/
         mode: '0755'
       with_fileglob:
-        - "{{mount_point}}/{{artifacts_path}}/*"
+        - "{{artifacts_path}}/*"
 
     - name: Unmount image
       shell: "umount --force --verbose {{mount_point}}/{{ item }}"
