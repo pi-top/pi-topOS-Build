@@ -16,11 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - build_type_name: "armhf-lite"
-            top_level_pkg: "pt-os-lite"
-
+          # armhf-lite
+          # armhf
           - build_type_name: "armhf"
-            top_level_pkg: "pt-os"
 
     steps:
       - name: GitHub Environment Variables Action
