@@ -10,7 +10,7 @@
     distro_name: bullseye
 
     top_level_pkg: pt-os
-    install_recommends: true
+    full_install: true
 
     recovery_mount_to: /boot/.recovery
 

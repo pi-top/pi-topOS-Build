@@ -29,11 +29,11 @@ jobs:
         include:
           - build_type_name: "armhf-lite"
             top_level_pkg: "pt-os-lite"
-            install_recommends: false
+            full_install: false
 
           - build_type_name: "armhf"
             top_level_pkg: "pt-os"
-            install_recommends: true
+            full_install: true
 
     steps:
       - name: GitHub Environment Variables Action
@@ -82,7 +82,7 @@ jobs:
           ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
                      --extra-vars distro_name=${{ env.DISTRO_NAME }} \
                      --extra-vars top_level_pkg=${{ matrix.top_level_pkg }} \
-                     --extra-vars install_recommends=${{ matrix.install_recommends }} \
+                     --extra-vars full_install=${{ matrix.full_install }} \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
@@ -92,6 +92,7 @@ jobs:
                      --extra-vars build_repo_commit_short="$(git rev-parse --short HEAD)" \
                      --extra-vars build_action_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
+                     --extra-vars full_install=${{ matrix.full_install }} \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."

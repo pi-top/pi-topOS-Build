@@ -19,6 +19,8 @@
     # python2 -c 'import crypt; print crypt.crypt("pi-top", "$1$SomeSalt$")'
     password: $1$SomeSalt$c4XjD2pO7T6KeaTJXLMFZ/
 
+    full_install: true
+
   tasks:
 ############
 # Password #
@@ -92,7 +94,7 @@
 ##################
 # System Patches #
 ##################
-    - name: Apply patches
+    - name: Apply system patches
       patch:
         # TODO: Add -vvv
         src: "patches/{{ item }}.diff"
@@ -101,8 +103,6 @@
       loop:
         - add-post-boot-blinking-cursor
         - volume-max
-        - dpms-timeout-5mins
-        - disable-openbox-session-right-click-menu
         - empty-etc-issue
         - empty-etc-motd
         - hostname
@@ -111,6 +111,17 @@
         - static-ip-on-usb-interface
         - us-keyboard
         - us-locale
+
+    - name: Apply desktop patches
+      when: full_install
+      patch:
+        # TODO: Add -vvv
+        src: "patches/{{ item }}.diff"
+        basedir: /
+        strip: 1
+      loop:
+        - dpms-timeout-5mins
+        - disable-openbox-session-right-click-menu
         - openbox-xdg-autostart-shebang
 
     - name: Create swapfile
