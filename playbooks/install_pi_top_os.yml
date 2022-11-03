@@ -38,7 +38,7 @@
         name: "{{ top_level_pkg }}"
         update_cache: true
         state: latest
-        install_recommends: "{{ full_install }}"
+        install_recommends: full_install
         default_release: "{{ distro_name }}"
       register: apt_status
       retries: 5
