@@ -9,6 +9,9 @@
     repo_name: pi-top-os-unstable
     distro_name: bullseye
 
+    top_level_pkg: pt-os
+    install_recommends: true
+
     recovery_mount_to: /boot/.recovery
 
   tasks:
@@ -37,12 +40,12 @@
         filename: "pi-top"
         update_cache: true
 
-    - name: Install pt-os
+    - name: Install top-level package
       apt:
-        name: pt-os
+        name: "{{ top_level_pkg }}"
         update_cache: true
         state: latest
-        install_recommends: true
+        install_recommends: "{{ install_recommends }}"
         default_release: "{{ distro_name }}"
       register: apt_status
       retries: 5
