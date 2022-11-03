@@ -99,12 +99,11 @@
         - empty-etc-motd
         - hostname
         - hosts
-        - source-etc-profile-in-etc-zsh-zprofile
         - static-ip-on-usb-interface
         - us-keyboard
         - us-locale
 
-    - name: Apply desktop patches
+    - name: Apply full-install patches (desktop, additional packages, etc.)
       when: full_install
       patch:
         # TODO: Add -vvv
@@ -112,6 +111,7 @@
         basedir: /
         strip: 1
       loop:
+        - source-etc-profile-in-etc-zsh-zprofile
         - dpms-timeout-5mins
         - disable-openbox-session-right-click-menu
         - openbox-xdg-autostart-shebang
