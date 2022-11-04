@@ -8,6 +8,9 @@
   vars:
     repo_name: pi-top-os
 
+    top_level_pkg: pt-os
+    full_install: true
+
     recovery_mount_to: /boot/.recovery
 
   tasks:
@@ -30,12 +33,13 @@
       retries: 5
       until: apt_status is success
 
-    - name: Install pt-os
+    - name: Install top-level package
       apt:
-        name: pt-os
+        name: "{{ top_level_pkg }}"
         update_cache: true
         state: latest
-        install_recommends: true
+        install_recommends: "{{ full_install }}"
+        default_release: "{{ distro_name }}"
       register: apt_status
       retries: 5
       until: apt_status is success
