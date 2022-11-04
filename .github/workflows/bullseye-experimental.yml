@@ -28,7 +28,7 @@ jobs:
       matrix:
         build_type_suffix: ["", "-lite"]
         architecture: ["armhf", "arm64"]
-        full_install: false
+        full_install: [false]
         include:
           # Set full_install to true if not lite
           - build_type_suffix: ""
