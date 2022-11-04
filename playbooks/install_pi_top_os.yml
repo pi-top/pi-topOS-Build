@@ -7,6 +7,7 @@
     PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/jvm/java-11-openjdk-armhf/bin"
   vars:
     repo_name: pi-top-os
+    distro_name: bullseye
 
     top_level_pkg: pt-os
     full_install: true
