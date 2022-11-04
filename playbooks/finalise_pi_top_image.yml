@@ -13,15 +13,22 @@
     build_number: 0
     distro_name: bullseye
     architecture: armhf
+    build_type_suffix: ""
   
   tasks:
 
-    - name: Remove qemu-arm-static from OS as we have finished chrooting
+    - name: Clean up QEMU chrooting artifacts
       file:
-        dest: "/tmp/pi-top-os/usr/bin/qemu-arm-static"
+        dest: "/tmp/pi-top-os/usr/bin/qemu-*-static"
         state: absent
 
+    - name: Check if preload file needs restoring
+      stat:
+        path: /tmp/pi-top-os/etc/ld.so.preload.bak
+      register: stat_result
+
     - name: Move preload file back as we are done here
+      when: stat_result.stat.exists
       shell: "mv /tmp/pi-top-os/etc/ld.so.preload.bak /tmp/pi-top-os/etc/ld.so.preload"
       args:
         creates: "/tmp/pi-top-os/etc/ld.so.preload"
@@ -108,7 +115,7 @@
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
     - set_fact:
-        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ architecture }}_{{ ansible_date_time.date }}_B{{ build_number }}"
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ architecture }}{{ build_type_suffix }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
     - name: Create a hard link to the image to use as the output filename
       file:
