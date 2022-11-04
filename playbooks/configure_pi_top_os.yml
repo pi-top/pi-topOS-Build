@@ -225,6 +225,7 @@
         state: absent
 
     - name: Set plymouth theme to 'pt-os-bootsplash'
+      when: full_install
       shell: plymouth-set-default-theme -R pt-os-bootsplash
 
     # openbox configuration is modified to prevent key-presses in openbox-session during onboarding
