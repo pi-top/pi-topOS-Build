@@ -15,10 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # armhf-lite
-          # armhf
-          - build_type_name: "armhf"
+        build_type_suffix: ["", "-lite"]
 
     steps:
       - name: GitHub Environment Variables Action
@@ -31,7 +28,7 @@ jobs:
 
       - name: Get RPi OS image name
         run: |
-          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ matrix.build_type_name }}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-armhf${{ matrix.build_type_suffix }}" >> $GITHUB_ENV
 
       - name: Install ansible and playbook dependencies
         run: |
@@ -45,16 +42,16 @@ jobs:
           # 'ansible-playbook' is not in root user's PATH
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
-          build_type_dir="raspios_$(echo ${{ matrix.build_type_name }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
+          build_type_dir="raspios_$(echo armhf${{ matrix.build_type_suffix }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
           url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.img.xz"
 
           echo "==> Running get_raspios playbook..."
-          ${ANSIBLE} --extra-vars raspi_os_url=${url} \
-                     --extra-vars image_name=${{ env.IMAGE_NAME }} \
+          ${ANSIBLE} --extra-vars "raspi_os_url=${url}" \
+                     --extra-vars "image_name=${{ env.IMAGE_NAME }}" \
                      playbooks/get_raspios.yml
 
           echo "==> Running mount_raspios playbook..."
-          ${ANSIBLE} --extra-vars image_name=${{ env.IMAGE_NAME }} \
+          ${ANSIBLE} --extra-vars "image_name=${{ env.IMAGE_NAME }}" \
                      playbooks/mount_raspios.yml
 
           echo "==> Running create_pi_top_os_image playbook..."
@@ -64,27 +61,31 @@ jobs:
           ${ANSIBLE} playbooks/mount_pi_top_os.yml
 
           echo "==> Running install_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars repo_name=${{ env.REPO_NAME }} \
+          ${ANSIBLE} --extra-vars "repo_name=${{ env.REPO_NAME }}" \
+                     --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
+                     --extra-vars "top_level_pkg=pt-os${{ matrix.build_type_suffix }}" \
+                     --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars distro_name=${{ env.DISTRO_NAME }} \
-                     --extra-vars build_number=${{ github.run_number || github.run_id }} \
-                     --extra-vars build_repo_commit="$(git rev-parse HEAD)" \
-                     --extra-vars build_repo_commit_short="$(git rev-parse --short HEAD)" \
-                     --extra-vars build_action_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-                     --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
+          ${ANSIBLE} --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
+                     --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
+                     --extra-vars "build_repo_commit=$(git rev-parse HEAD)" \
+                     --extra-vars "build_repo_commit_short=$(git rev-parse --short HEAD)" \
+                     --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+                     --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
+                     --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
-          ${ANSIBLE} --extra-vars distro_name=${{ env.DISTRO_NAME }} \
-                     --extra-vars build_number=${{ github.run_number || github.run_id }} \
-                     --extra-vars build_repo_name="${{ env.REPO_NAME }}" \
-                     --extra-vars architecture="${{ matrix.build_type_name }}" \
+          ${ANSIBLE} --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
+                     --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
+                     --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
+                     --extra-vars "architecture=armhf${{ matrix.build_type_suffix }}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
-          ${ANSIBLE} --extra-vars build_number=${{ github.run_number || github.run_id }} \
+          ${ANSIBLE} --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      playbooks/analyse_build.yml
 
       - name: Get zip filename
@@ -92,12 +93,12 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ matrix.build_type_name }}_${{ steps.date.outputs.date }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_armhf${{ matrix.build_type_suffix }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 
