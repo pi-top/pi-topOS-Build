@@ -24,7 +24,7 @@ jobs:
   build:
     runs-on: ubuntu-20.04
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         build_type_suffix: ["", "-lite"]
         architecture: ["armhf", "arm64"]
@@ -44,7 +44,9 @@ jobs:
 
       - name: Install ansible and playbook dependencies
         run: |
-          # qemu-user-static v5.2
+          # Install 'qemu-user-static' >v5 to allow 'arm64' chroot
+          # 'ubuntu-20.04' (currently latest) does not have an up-to-date version, so we install from `ubuntu-security` repo
+
           wget https://mirror.ip-projects.de/ubuntu-security/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
 
           sudo apt-get update && sudo apt-get install -y \
