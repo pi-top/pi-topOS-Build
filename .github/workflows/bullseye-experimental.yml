@@ -111,12 +111,12 @@ jobs:
 
       - name: Get current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+        run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ matrix.build_type_name }}_${{ steps.date.outputs.date }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ matrix.build_type_name }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 
