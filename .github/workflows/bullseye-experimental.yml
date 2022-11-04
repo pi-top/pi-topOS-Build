@@ -40,8 +40,9 @@ jobs:
 
       - name: Get build type and RPi OS image name
         run: |
-          echo "BUILD_TYPE=${{ matrix.architecture }}${{ matrix.build_type_suffix }}" >> $GITHUB_ENV
-          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ env.BUILD_TYPE }}" >> $GITHUB_ENV
+          build_type="${{ matrix.architecture }}${{ matrix.build_type_suffix }}"
+          echo "BUILD_TYPE=${build_type}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${build_type}" >> $GITHUB_ENV
 
       - name: Install ansible and playbook dependencies
         # Install 'qemu-user-static' >v5 to allow 'arm64' chroot
