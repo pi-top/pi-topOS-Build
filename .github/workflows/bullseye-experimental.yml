@@ -113,18 +113,14 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Upload OS zip artifact
+      - name: Upload OS zip contents
         uses: actions/upload-artifact@v2
         with:
           name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ matrix.build_type_name }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
-          path: ${{ env.ZIP_FILENAME }}
-
-      - name: Upload metadata artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: metadata
-          if-no-files-found: error
           path: |
             playbooks/artifacts/*
-            !${{ env.ZIP_FILENAME }}
+            !**/*.zip
+
+      - name: Print metadata
+        run: cat playbooks/artifacts/metadata.txt
