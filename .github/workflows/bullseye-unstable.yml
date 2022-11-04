@@ -88,9 +88,6 @@ jobs:
           ${ANSIBLE} --extra-vars build_number=${{ github.run_number || github.run_id }} \
                      playbooks/analyse_build.yml
 
-      - name: Get zip filename
-        run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
-
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
@@ -111,5 +108,6 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v0.4.0
         with:
           credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
-          path: ${{ env.ZIP_FILENAME }}
+          path: 'playbooks/artifacts'
+          glob: '**/*.zip'
           destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ env.DISTRO_NAME }}/
