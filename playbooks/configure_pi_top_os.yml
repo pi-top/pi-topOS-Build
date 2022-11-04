@@ -19,6 +19,7 @@
     password : $5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA
 
 
+    architecture: armhf
     full_install: true
 
   tasks:
@@ -112,6 +113,15 @@
         - source-etc-profile-in-etc-zsh-zprofile
         - dpms-timeout-5mins
         - disable-openbox-session-right-click-menu
+
+    # TODO: confirm that this is supposed to be skipped
+    - name: Apply full-install 32-bit only patches
+      when: full_install and architecture == "armhf"
+      patch:
+        src: "patches/{{ item }}.diff"
+        basedir: /
+        strip: 1
+      loop:
         - openbox-xdg-autostart-shebang
 
     - name: Create larger static swapfile (to speed up first boot)

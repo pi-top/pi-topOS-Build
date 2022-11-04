@@ -95,6 +95,7 @@ jobs:
                      --extra-vars "build_repo_commit_short=$(git rev-parse --short HEAD)" \
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
+                     --extra-vars "architecture=${{ matrix.architecture }}" \
                      --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/configure_pi_top_os.yml
 
