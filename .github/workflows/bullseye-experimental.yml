@@ -27,6 +27,7 @@ jobs:
       fail-fast: false
       matrix:
         build_type_suffix: ["", "-lite"]
+        architecture: ["armhf"]
 
     steps:
       - name: GitHub Environment Variables Action
@@ -37,9 +38,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get RPi OS image name
+      - name: Get build type and RPi OS image name
         run: |
-          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-armhf${{ matrix.build_type_suffix }}" >> $GITHUB_ENV
+          echo "BUILD_TYPE=${{ matrix.architecture }}${{ matrix.build_type_suffix }}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${{ env.BUILD_TYPE }}" >> $GITHUB_ENV
 
       - name: Install ansible and playbook dependencies
         run: |
@@ -53,7 +55,7 @@ jobs:
           # 'ansible-playbook' is not in root user's PATH
           ANSIBLE="sudo $(which ansible-playbook) -i inventory -vv"
 
-          build_type_dir="raspios_$(echo armhf${{ matrix.build_type_suffix }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
+          build_type_dir="raspios_$(echo ${{ env.BUILD_TYPE }} | python3 -c "import sys; print('_'.join(reversed(sys.stdin.read().strip().split('-'))))")"
           url="https://downloads.raspberrypi.org/${build_type_dir}/images/${build_type_dir}-${{ env.RASPIOS_RELEASE_DATE }}/${{ env.IMAGE_NAME }}.img.xz"
 
           echo "==> Running get_raspios playbook..."
@@ -92,7 +94,7 @@ jobs:
           ${ANSIBLE} --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
-                     --extra-vars "architecture=armhf${{ matrix.build_type_suffix }}" \
+                     --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
@@ -109,7 +111,7 @@ jobs:
       - name: Upload OS zip artifact
         uses: actions/upload-artifact@v2
         with:
-          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_armhf${{ matrix.build_type_suffix }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: ${{ env.ZIP_FILENAME }}
 
