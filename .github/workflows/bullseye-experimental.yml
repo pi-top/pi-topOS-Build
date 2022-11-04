@@ -28,11 +28,6 @@ jobs:
       matrix:
         build_type_suffix: ["", "-lite"]
         architecture: ["armhf", "arm64"]
-        full_install: [false]
-        include:
-          # Set full_install to true if not lite
-          - build_type_suffix: ""
-            full_install: true
 
     steps:
       - name: GitHub Environment Variables Action
@@ -88,7 +83,7 @@ jobs:
           ${ANSIBLE} --extra-vars "repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
                      --extra-vars "top_level_pkg=${{ matrix.top_level_pkg }}" \
-                     --extra-vars "{'full_install': ${{ matrix.full_install }}}" \
+                     --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
@@ -98,7 +93,7 @@ jobs:
                      --extra-vars "build_repo_commit_short=$(git rev-parse --short HEAD)" \
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
-                     --extra-vars "{'full_install': ${{ matrix.full_install }}}" \
+                     --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
