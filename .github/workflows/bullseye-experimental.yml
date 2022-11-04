@@ -73,7 +73,6 @@ jobs:
 
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars "repo_name=${{ env.REPO_NAME }}" \
-                     --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
                      --extra-vars "top_level_pkg=pt-os${{ matrix.build_type_suffix }}" \
                      --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/install_pi_top_os.yml
