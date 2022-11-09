@@ -9,6 +9,7 @@
     repo_name: pi-top-os
 
     top_level_pkg: pt-os
+    architecture: armhf
     full_install: true
 
     recovery_mount_to: /boot/.recovery
@@ -35,7 +36,7 @@
 
     # Temporary, until 64-bit builds are added to core repo!
     - name: Install experimental 64-bit pi-topOS apt source
-      when: full_install
+      when: full_install and architecture == "armhf"
       shell: curl -s https://packagecloud.io/install/repositories/m-roberts/experimental/script.deb.sh | sudo bash
 
     - name: Install top-level package
