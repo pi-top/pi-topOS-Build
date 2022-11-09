@@ -19,6 +19,7 @@ env:
   REPO_NAME: "experimental"  # 'experimental', 'unstable', 'testing', 'release'
   RASPIOS_BUILD_DATE: "2022-09-22"
   RASPIOS_RELEASE_DATE: "2022-09-26"
+  KEEP_PREVIEW_SOURCE: false
 
 jobs:
   build:
@@ -99,6 +100,7 @@ jobs:
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "architecture=${{ matrix.architecture }}" \
                      --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
+                     --extra-vars "{'keep_preview_source': ${{ env.KEEP_PREVIEW_SOURCE }}}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
