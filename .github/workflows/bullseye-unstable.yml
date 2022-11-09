@@ -96,7 +96,7 @@ jobs:
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
-                     --extra-vars "architecture=${{ matrix.build_type_name }}" \
+                     --extra-vars "architecture=${{ matrix.architecture }}" \
                      --extra-vars "{'zip_image': ${{ env.REPO_NAME == 'experimental' }}}" \
                      playbooks/finalise_pi_top_image.yml
 
