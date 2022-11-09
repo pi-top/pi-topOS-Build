@@ -33,6 +33,11 @@
       retries: 5
       until: apt_status is success
 
+    # Temporary, until 64-bit builds are added to core repo!
+    - name: Install experimental 64-bit pi-topOS apt source
+      when: full_install
+      shell: curl -s https://packagecloud.io/install/repositories/m-roberts/experimental/script.deb.sh | sudo bash
+
     - name: Install top-level package
       apt:
         name: "{{ top_level_pkg }}"
