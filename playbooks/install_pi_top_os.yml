@@ -36,7 +36,7 @@
 
     # Temporary, until 64-bit builds are added to core repo!
     - name: Install experimental 64-bit pi-topOS apt source
-      when: full_install and architecture == "armhf"
+      when: full_install and architecture == "arm64"
       shell: curl -s https://packagecloud.io/install/repositories/m-roberts/experimental/script.deb.sh | sudo bash
 
     - name: Install top-level package
