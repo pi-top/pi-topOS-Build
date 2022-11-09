@@ -14,6 +14,7 @@
     distro_name: bullseye
     architecture: armhf
     build_type_suffix: ""
+    zip_image: true
   
   tasks:
 
@@ -124,6 +125,7 @@
         state: hard
 
     - name: Compress image into zip
+      when: zip_image
       archive:
         path:
           - "{{ output_directory }}/{{ output_filename }}.img"
@@ -135,9 +137,10 @@
     - name: Verify zip
       fail:
         msg: Files were missing from the output zip
-      when: zip_result.missing | length > 0
+      when: zip_image and zip_result.missing | length > 0
 
     - name: Remove the hard link to avoid any confusion
+      when: zip_image
       file:
         dest: "{{ output_directory }}/{{ output_filename }}"
         state: absent

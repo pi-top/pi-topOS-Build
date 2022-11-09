@@ -108,31 +108,26 @@ jobs:
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "architecture=${{ matrix.build_type_name }}" \
+                     --extra-vars "{'zip_image': ${{ env.REPO_NAME == 'experimental' }}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
           ${ANSIBLE} --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      playbooks/analyse_build.yml
 
-      - name: Get zip filename
-        run: echo "ZIP_FILENAME=$(find playbooks/artifacts -name "*.zip" | head -n1)" >> $GITHUB_ENV
-
       - name: Get current date
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Upload OS zip artifact
+      - name: Upload OS zip contents
         uses: actions/upload-artifact@v2
         with:
           name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
-          path: ${{ env.ZIP_FILENAME }}
-
-      - name: Upload metadata artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: metadata
-          if-no-files-found: error
           path: |
             playbooks/artifacts/*
-            !${{ env.ZIP_FILENAME }}
+            !**/*.zip
+
+      - name: Print metadata
+        run: cat playbooks/artifacts/metadata.txt
