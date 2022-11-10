@@ -118,10 +118,14 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      # Experimental builds: get a download link (lasts for 14 days)
-      # without requiring all jobs to finish.
-      - name: Upload to transfer.sh
-        run: curl --upload-file ./playbooks/artifacts/*.zip https://transfer.sh
+      - name: Upload OS zip contents
+        uses: actions/upload-artifact@v2
+        with:
+          name: pi-topOS_${{ inputs.distro_name }}_${{ inputs.repo_name }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          if-no-files-found: error
+          path: |
+            playbooks/artifacts/*
+            !**/*.zip
 
       - name: Print metadata
         run: cat playbooks/artifacts/metadata.txt
