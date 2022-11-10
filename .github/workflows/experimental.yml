@@ -10,6 +10,7 @@ on:
       - "ansible.cfg"
       - ".github/workflows/bullseye-experimental.yml"
   workflow_dispatch:
+    # No inputs defined here so that push behaviour matches all manual builds
   schedule:
     # Run daily at midnight
     - cron:  '0 0 * * *'
