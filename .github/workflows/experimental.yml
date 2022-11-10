@@ -121,7 +121,7 @@ jobs:
       - name: Upload OS zip contents
         uses: actions/upload-artifact@v2
         with:
-          name: pi-topOS_${{ inputs.distro_name }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
