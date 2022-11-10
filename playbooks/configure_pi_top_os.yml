@@ -24,12 +24,12 @@
 
   tasks:
     - name: Determine if full build
-      when: "-" not in build_type
+      when: '"-" not in build_type'
       set_fact:
         full_install: true
 
     - name: Determine if full build
-      when: "-" in build_type
+      when: '"-" in build_type'
       set_fact:
         full_install: false
 
