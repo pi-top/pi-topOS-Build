@@ -8,7 +8,7 @@ on:
       - "playbooks/**"
       - "inventory"
       - "ansible.cfg"
-      - ".github/workflows/bullseye-experimental.yml"
+      - ".github/workflows/experimental.yml"
   workflow_dispatch:
     # No inputs defined here so that push behaviour matches all manual builds
   schedule:
