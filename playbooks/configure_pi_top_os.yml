@@ -216,7 +216,6 @@
 # General system config #
 #########################
     - name: Setup pt-os-first-boot-setup to run on first boot
-      when: full_install
       shell: /usr/sbin/pt-os-first-boot-setup prepare
 
     - name: Generate default locales
