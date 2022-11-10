@@ -22,10 +22,6 @@ on:
         required: false
         type: boolean
 
-env:
-  RASPIOS_BUILD_DATE: "2022-09-22"
-  RASPIOS_RELEASE_DATE: "2022-09-26"
-
 jobs:
   build:
     runs-on: ubuntu-20.04
@@ -36,6 +32,8 @@ jobs:
         architecture: ["armhf", "arm64"]
 
     steps:
+      - uses: aarcangeli/load-dotenv@v1.0.0
+
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v1.2.1
 
