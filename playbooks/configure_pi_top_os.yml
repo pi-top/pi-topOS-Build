@@ -18,13 +18,15 @@
     # echo 'pi-top' | openssl passwd -5 -stdin -salt 'SomeSalt'
     password : $5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA
 
-
-    architecture: armhf
-    full_install: true
+    build_type: armhf
 
     keep_preview_sources: false
 
   tasks:
+    - name: Determine if full build
+      set_fact:
+        full_install: "-" not in build_type
+
 ##############
 # Build Info #
 ##############
@@ -118,7 +120,7 @@
 
     # TODO: confirm that this is supposed to be skipped
     - name: Apply full-install 32-bit only patches
-      when: full_install and architecture == "armhf"
+      when: build_type == "armhf"
       patch:
         src: "patches/{{ item }}.diff"
         basedir: /

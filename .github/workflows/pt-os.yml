@@ -1,14 +1,30 @@
-name: pi-topOS Unstable Bullseye Build
+name: pi-topOS Build
 
 on:
-  workflow_dispatch
+  workflow_dispatch:
+    inputs:
+      repo_name:
+        description: 'Repository to build against'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+        - unstable
+        - testing
+        - release
+      distro_name:
+        description: 'OS distribution'
+        required: true
+        default: 'bullseye'
+        type: string
+      keep_preview_source:
+        description: 'Keep preview sources?'
+        required: false
+        type: boolean
 
 env:
-  DISTRO_NAME: "bullseye"
-  REPO_NAME: "unstable"  # 'experimental', 'unstable', 'testing', 'release'
   RASPIOS_BUILD_DATE: "2022-09-22"
   RASPIOS_RELEASE_DATE: "2022-09-26"
-  KEEP_PREVIEW_SOURCE: false
 
 jobs:
   build:
@@ -32,7 +48,7 @@ jobs:
         run: |
           build_type="${{ matrix.architecture }}${{ matrix.build_type_suffix }}"
           echo "BUILD_TYPE=${build_type}" >> $GITHUB_ENV
-          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${build_type}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ inputs.distro_name }}-${build_type}" >> $GITHUB_ENV
 
       - name: Install ansible and playbook dependencies
         # Install 'qemu-user-static' >v5 to allow 'arm64' chroot
@@ -73,28 +89,27 @@ jobs:
           ${ANSIBLE} playbooks/mount_pi_top_os.yml
 
           echo "==> Running install_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars "repo_name=${{ env.REPO_NAME }}" \
-                     --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
+          ${ANSIBLE} --extra-vars "repo_name=${{ inputs.repo_name }}" \
+                     --extra-vars "distro_name=${{ inputs.distro_name }}" \
                      --extra-vars "top_level_pkg=pt-os${{ matrix.build_type_suffix }}" \
                      --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
+          ${ANSIBLE} --extra-vars "distro_name=${{ inputs.distro_name }}" \
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_commit=$(git rev-parse HEAD)" \
                      --extra-vars "build_repo_commit_short=$(git rev-parse --short HEAD)" \
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-                     --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
-                     --extra-vars "architecture=${{ matrix.architecture }}" \
-                     --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
-                     --extra-vars "{'keep_preview_source': ${{ env.KEEP_PREVIEW_SOURCE }}}" \
+                     --extra-vars "build_repo_name=${{ inputs.repo_name }}" \
+                     --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "{'keep_preview_source': ${{ inputs.keep_preview_source }}}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
-          ${ANSIBLE} --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
+          ${ANSIBLE} --extra-vars "distro_name=${{ inputs.distro_name }}" \
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
-                     --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
+                     --extra-vars "build_repo_name=${{ inputs.repo_name }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
                      playbooks/finalise_pi_top_image.yml
 
@@ -106,18 +121,10 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      # Experimental builds: get a download link (lasts for 14 days)
-      # without requiring all jobs to finish.
-      - name: Upload to transfer.sh
-        if: env.REPO_NAME == 'experimental'
-        run: curl -v --upload-file ./playbooks/artifacts/*.zip https://transfer.sh
-
-      # Non-experimental builds: require all jobs to finish, upload to GitHub
       - name: Upload OS zip contents
-        if: env.REPO_NAME != 'experimental'
         uses: actions/upload-artifact@v2
         with:
-          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ inputs.distro_name }}_${{ inputs.repo_name }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
@@ -132,4 +139,4 @@ jobs:
           credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
           path: 'playbooks/artifacts'
           glob: '**/*.zip'
-          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ env.DISTRO_NAME }}/
+          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ inputs.distro_name }}/
