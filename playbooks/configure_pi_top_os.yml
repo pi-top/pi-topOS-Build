@@ -25,7 +25,7 @@
   tasks:
     - name: Determine if full build
       set_fact:
-        full_install: '"-" not in build_type'
+        full_install: "-" not in build_type
 
 ##############
 # Build Info #
