@@ -108,7 +108,6 @@ jobs:
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
-                     --extra-vars "{'zip_image': ${{ env.REPO_NAME == 'experimental' }}}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
@@ -119,7 +118,15 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      # Experimental builds: get a download link (lasts for 14 days)
+      # without requiring all jobs to finish.
+      - name: Upload to transfer.sh
+        if: env.REPO_NAME == 'experimental'
+        run: curl -v --upload-file ./playbooks/artifacts/*.zip https://transfer.sh
+
+      # Non-experimental builds: require all jobs to finish, upload to GitHub
       - name: Upload OS zip contents
+        if: env.REPO_NAME != 'experimental'
         uses: actions/upload-artifact@v2
         with:
           name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}

@@ -139,7 +139,6 @@
       when: zip_image and zip_result.missing | length > 0
 
     - name: Remove the hard link to avoid any confusion
-      when: zip_image
       file:
         dest: "{{ output_directory }}/{{ output_filename }}"
         state: absent
