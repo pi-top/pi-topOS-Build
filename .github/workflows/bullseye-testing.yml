@@ -96,7 +96,6 @@ jobs:
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
-                     --extra-vars "architecture=${{ matrix.architecture }}" \
                      --extra-vars "{'zip_image': ${{ env.REPO_NAME == 'experimental' }}}" \
                      playbooks/finalise_pi_top_image.yml
 
@@ -111,14 +110,7 @@ jobs:
       - name: Upload OS zip contents
         uses: actions/upload-artifact@v2
         with:
-          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ matrix.build_type_name }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
-          if-no-files-found: error
-          path: ${{ env.ZIP_FILENAME }}
-
-      - name: Upload metadata artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: metadata
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: |
             playbooks/artifacts/*

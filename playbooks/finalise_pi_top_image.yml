@@ -12,8 +12,7 @@
     build_repo_name: unstable
     build_number: 0
     distro_name: bullseye
-    architecture: armhf
-    build_type_suffix: ""
+    build_type: armhf
     zip_image: true
   
   tasks:
@@ -116,7 +115,7 @@
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
     - set_fact:
-        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ architecture }}{{ build_type_suffix }}_{{ ansible_date_time.date }}_B{{ build_number }}"
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
     - name: Create a hard link to the image to use as the output filename
       file:
