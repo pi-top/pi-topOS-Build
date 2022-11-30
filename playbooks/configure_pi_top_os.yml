@@ -20,7 +20,6 @@
 
     build_type: armhf
 
-    keep_preview_sources: false
 
   tasks:
     - name: Determine if full build
