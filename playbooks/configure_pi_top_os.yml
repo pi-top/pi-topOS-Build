@@ -266,20 +266,6 @@
 ############
 # Clean up #
 ############
-    - name: Remove non-release apt sources
-      when: not keep_preview_sources
-      apt:
-        name: "{{ packages }}"
-        state: absent
-        purge: true
-        autoclean: true
-        autoremove: true
-      vars:
-        packages:
-          - pi-top-os-experimental-apt-source
-          - pi-top-os-unstable-apt-source
-          - pi-top-os-testing-apt-source
-
     - name: Remove leftover raspi-ui-overrides directory
       file:
         dest: /usr/share/raspi-ui-overrides
