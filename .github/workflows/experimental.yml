@@ -22,7 +22,6 @@ on:
 env:
   DISTRO_NAME: "bullseye"
   REPO_NAME: "experimental"
-  KEEP_PREVIEW_SOURCE: false
 
 jobs:
   build:
