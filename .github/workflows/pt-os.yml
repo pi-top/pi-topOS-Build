@@ -17,10 +17,6 @@ on:
         required: true
         default: 'bullseye'
         type: string
-      keep_preview_source:
-        description: 'Keep preview sources?'
-        required: false
-        type: boolean
 
 jobs:
   build:
