@@ -104,7 +104,6 @@ jobs:
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
-                     --extra-vars "{'keep_preview_source': ${{ env.KEEP_PREVIEW_SOURCE }}}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
