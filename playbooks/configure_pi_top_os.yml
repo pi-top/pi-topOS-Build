@@ -18,8 +18,20 @@
     # echo 'pi-top' | openssl passwd -5 -stdin -salt 'SomeSalt'
     password : $5$SomeSalt$5KBi.t.mQ9q82FXRw8DBz5NQLVEmck9OdqHSgu3Q5gA
 
+    build_type: armhf
+
 
   tasks:
+    - name: Determine if full build
+      when: '"-" not in build_type'
+      set_fact:
+        full_install: true
+
+    - name: Determine if full build
+      when: '"-" in build_type'
+      set_fact:
+        full_install: false
+
 ##############
 # Build Info #
 ##############
@@ -84,25 +96,41 @@
 ##################
 # System Patches #
 ##################
-    - name: Apply patches
+    - name: Apply system patches
       patch:
-        # TODO: Add -vvv
         src: "patches/{{ item }}.diff"
         basedir: /
         strip: 1
       loop:
         - add-post-boot-blinking-cursor
         - volume-max
-        - dpms-timeout-5mins
-        - disable-openbox-session-right-click-menu
         - empty-etc-issue
         - empty-etc-motd
         - hostname
         - hosts
-        - source-etc-profile-in-etc-zsh-zprofile
         - static-ip-on-usb-interface
         - us-keyboard
         - us-locale
+
+    - name: Apply full-install patches (desktop, additional packages, etc.)
+      when: full_install
+      patch:
+        src: "patches/{{ item }}.diff"
+        basedir: /
+        strip: 1
+      loop:
+        - source-etc-profile-in-etc-zsh-zprofile
+        - dpms-timeout-5mins
+        - disable-openbox-session-right-click-menu
+
+    # TODO: confirm that this is supposed to be skipped
+    - name: Apply full-install 32-bit only patches
+      when: build_type == "armhf"
+      patch:
+        src: "patches/{{ item }}.diff"
+        basedir: /
+        strip: 1
+      loop:
         - openbox-xdg-autostart-shebang
 
     - name: Create larger static swapfile (to speed up first boot)
@@ -114,23 +142,28 @@
 # Onboarding setup: systemd/dbus services #
 ###########################################
     - name: Disable notifications until onboarding is completed
+      when: full_install
       shell: |
         mkdir -p /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
         mv /usr/share/dbus-1/services/org.xfce.xfce4-notifyd.Notifications.service /usr/lib/pt-os-web-portal/bak/usr/share/dbus-1/services/
 
     - name: Enable Onboarding (using symlink)
+      when: full_install
       shell: ln -sf /usr/lib/python3/dist-packages/pt_os_web_portal/resources/pt-os-setup.desktop /etc/xdg/autostart/pt-os-setup.desktop
 
     # Boot to openbox-session by setting priority 99 (higher than LXDE default)
     - name: Set openbox-session as session manager
+      when: full_install
       shell: update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/openbox-session 99
 
     - name: Disable Further Link for onboarding (using symlink)
+      when: full_install
       file:
         dest: /etc/systemd/system/multi-user.target.wants/further-link.service
         state: absent
 
     - name: Disable OLED menu until onboarding finishes (using symlink)
+      when: full_install
       file:
         dest: /etc/systemd/system/multi-user.target.wants/pt-miniscreen.service
         state: absent
@@ -142,6 +175,7 @@
       shell: hostname
 
     - name: Enable Wi-Fi AP-STA mode (Wi-Fi Access Point)
+      when: full_install
       shell: wifi-ap-sta enable
 
     - name: Set up virtual Ethernet driver for pi-top [4] display port
@@ -209,10 +243,12 @@
         state: absent
 
     - name: Set plymouth theme to 'pt-os-bootsplash'
+      when: full_install
       shell: plymouth-set-default-theme -R pt-os-bootsplash
 
     # openbox configuration is modified to prevent key-presses in openbox-session during onboarding
     - name: Configure openbox environment
+      when: full_install
       shell: |
         mkdir -p /home/pi/.config/openbox
         cp /etc/xdg/openbox/rc.xml /home/pi/.config/openbox/rc.xml
@@ -220,6 +256,7 @@
         sed -i ':a;N;$!ba; s@<keyboard>.*<\/keyboard>@<keyboard>'"${keyboard_binding}"'<\/keyboard>@g' /home/pi/.config/openbox/rc.xml
 
     - name: Enable VNC Server (using symlink)
+      when: full_install
       file:
         dest: /etc/systemd/system/multi-user.target.wants/vncserver-x11-serviced.service
         src: /usr/lib/systemd/system/vncserver-x11-serviced.service
