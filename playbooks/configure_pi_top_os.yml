@@ -123,7 +123,6 @@
         - dpms-timeout-5mins
         - disable-openbox-session-right-click-menu
 
-    # TODO: confirm that this is supposed to be skipped
     - name: Apply full-install 32-bit only patches
       when: build_type == "armhf"
       patch:
@@ -137,6 +136,12 @@
       shell: |
         sed -i "s|CONF_SWAPSIZE=100|CONF_SWAPSIZE={{ swapfile_size_mb }}|" /etc/dphys-swapfile
         dd if=/dev/zero of=/var/swap bs=1024 count=$((1024 * {{ swapfile_size_mb }}))
+
+    - name: Fix swapfile permissions and header
+      when: build_type == "armhf"
+      shell: |
+        chmod 0600 /var/swap
+        mkswap /var/swap
 
 ###########################################
 # Onboarding setup: systemd/dbus services #
