@@ -5,7 +5,7 @@
   vars:
     image_folder: ./
     # TODO: use 'image_name' on localhost if already defined
-    image_name: 2021-10-30-raspios-bullseye-armhf
+    image_name: 2022-09-22-raspios-bullseye-armhf
     raspi_os_mount_point: /tmp/raspi-os
   tasks:
 
@@ -20,11 +20,8 @@
     - set_fact:
         image_path: "{{ image_folder }}/{{ image_name }}.img"
 
-    - name: Unzip OS image
-      unarchive:
-        src: "{{ image_folder }}/{{ image_name }}.zip"
-        dest: "{{ image_folder }}"
-        creates: "{{ image_path }}"
+    - name: Extract OS image
+      shell: "unxz -kv {{ image_folder }}/{{ image_name }}.img.xz"
 
     # Ensure that a loopback device is associated with image
 
@@ -102,12 +99,20 @@
         opts: defaults
         state: mounted
 
-    # Enable chroot to ARM: https://wiki.debian.org/QemuUserEmulation
-    - name: Copy qemu-arm-static to Raspberry Pi OS to enable chrooting
+    - set_fact:
+        qemu_file: "qemu-arm-static"
+      when: '"armhf" in image_name'
+
+    - set_fact:
+        qemu_file: "qemu-aarch64-static"
+      when: '"arm64" in image_name'
+
+    # https://wiki.debian.org/QemuUserEmulation
+    - name: Enable chrooting via qemu-user-static
       become: true
       copy:
-        src: /usr/bin/qemu-arm-static
-        dest: "{{ raspi_os_mount_point }}/usr/bin/qemu-arm-static"
+        src: "/usr/bin/{{ qemu_file }}"
+        dest: "{{ raspi_os_mount_point }}/usr/bin/{{ qemu_file }}"
         mode: '0755'
         remote_src: true
 
@@ -118,6 +123,7 @@
     # https://patchwork.kernel.org/patch/10807531/
     # https://www.raspberrypi.org/forums/viewtopic.php?t=235594
     - name: Move preload file to avoid noisy build
+      when: '"armhf" in image_name'
       become: true
       shell: "mv {{ raspi_os_mount_point }}/etc/ld.so.preload {{ raspi_os_mount_point }}/etc/ld.so.preload.bak"
       args:
