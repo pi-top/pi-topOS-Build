@@ -132,4 +132,5 @@ jobs:
           credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
           path: 'playbooks/artifacts'
           glob: '**/*.zip'
+          parent: false
           destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ inputs.distro_name }}/
