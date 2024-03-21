@@ -39,8 +39,6 @@
     - name: Get the rootfs loopback device
       # The trailing space is important, zerofree only applies to extN file systems not fat so can only be used on the rootfs
       shell: "mount -v | grep '/tmp/pi-top-os ' | cut -f1 -d' '"
-      args:
-        warn: false
       register: rootfs_lo_device
 
     - set_fact:

@@ -122,23 +122,15 @@
     - name: Mount proc
       become: true
       command: mount -t proc /proc "{{ pt_os_mount_point }}/proc"
-      args:
-        warn: false
 
     - name: Mount sys
       become: true
       command: mount -t sysfs /sys "{{ pt_os_mount_point }}/sys"
-      args:
-        warn: false
 
     - name: Mount dev
       become: true
       command: mount -o bind /dev "{{ pt_os_mount_point }}/dev"
-      args:
-        warn: false
 
     - name: Mount dev/pts
       become: true
       command: mount -o bind /dev/pts "{{ pt_os_mount_point }}/dev/pts"
-      args:
-        warn: false

@@ -48,7 +48,7 @@ jobs:
         # Install 'qemu-user-static' >v5 to allow 'arm64' chroot
         # 'ubuntu-20.04' (currently latest) does not have an up-to-date version, so we install from `ubuntu-security` repo
         run: |
-          wget https://mirror.ip-projects.de/ubuntu-security/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
+          wget http://old-releases.ubuntu.com/ubuntu/pool/universe/q/qemu/qemu-user-static_5.2+dfsg-9ubuntu3.1_amd64.deb
 
           sudo apt-get update && sudo apt-get install -y \
             ansible \
