@@ -29,8 +29,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type_suffix: ["-lite"]
-        architecture: ["armhf"]
+        build_type_suffix: ["", "-lite"]
+        architecture: ["armhf", "arm64"]
 
     steps:
       - name: GitHub Environment Variables Action
