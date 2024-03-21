@@ -25,12 +25,12 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
-        build_type_suffix: ["", "-lite"]
-        architecture: ["armhf", "arm64"]
+        build_type_suffix: ["-lite"]
+        architecture: ["armhf"]
 
     steps:
       - name: GitHub Environment Variables Action
