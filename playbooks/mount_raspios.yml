@@ -42,7 +42,7 @@
     # Mount loopback device to mountpoint
 
     - name: blkid raspi boot
-      shell: "blkid -l -o export -t LABEL='boot'"
+      shell: "blkid -l -o export -t LABEL='bootfs'"
       register: blkid_raspi_boot_stdout
 
     - debug:

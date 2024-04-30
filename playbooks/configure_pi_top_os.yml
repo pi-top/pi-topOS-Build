@@ -108,7 +108,7 @@
         - empty-etc-motd
         - hostname
         - hosts
-        - static-ip-on-usb-interface
+        # - static-ip-on-usb-interface
         - us-keyboard
         - us-locale
 
