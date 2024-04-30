@@ -20,7 +20,7 @@ on:
 
 
 env:
-  DISTRO_NAME: "bullseye"
+  DISTRO_NAME: "bookworm"
   REPO_NAME: "experimental"
 
 jobs:
