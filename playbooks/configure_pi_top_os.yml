@@ -123,14 +123,14 @@
         - dpms-timeout-5mins
         - disable-openbox-session-right-click-menu
 
-    - name: Apply full-install 32-bit only patches
-      when: build_type == "armhf"
-      patch:
-        src: "patches/{{ item }}.diff"
-        basedir: /
-        strip: 1
-      loop:
-        - openbox-xdg-autostart-shebang
+    # - name: Apply full-install 32-bit only patches
+    #   when: build_type == "armhf"
+    #   patch:
+    #     src: "patches/{{ item }}.diff"
+    #     basedir: /
+    #     strip: 1
+    #   loop:
+    #     - openbox-xdg-autostart-shebang
 
     - name: Create larger static swapfile (to speed up first boot)
       shell: |
