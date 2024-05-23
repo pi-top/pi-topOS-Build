@@ -15,8 +15,11 @@ on:
       distro_name:
         description: 'OS distribution'
         required: true
-        default: 'bullseye'
-        type: string
+        default: 'bookworm'
+        type: choice
+        options:
+        - bullseye
+        - bookworm
 
 jobs:
   build:
