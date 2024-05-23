@@ -87,10 +87,10 @@
         mode: '0755'
 
     # # TODO: move to a new stage
-    # - name: Update all packages to the latest version
-    #   apt:
-    #     upgrade: dist
-    #     update_cache: true
-    #   register: apt_status
-    #   retries: 5
-    #   until: apt_status is success
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+        update_cache: true
+      register: apt_status
+      retries: 5
+      until: apt_status is success
