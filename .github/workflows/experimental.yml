@@ -9,14 +9,22 @@ on:
       - "inventory"
       - "ansible.cfg"
       - ".github/workflows/experimental.yml"
-  workflow_dispatch:
-    # No inputs defined here so that push behaviour matches all manual builds
   schedule:
     # Run daily at midnight
     - cron:  '0 0 * * *'
   pull_request:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      build_type_suffix:
+        description: 'Full or lite build'
+        required: true
+        default: ''
+        type: choice
+        options:
+        - ""
+        - "-lite"
 
 
 env:
@@ -29,7 +37,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_type_suffix: ["", "-lite"]
         architecture: ["armhf", "arm64"]
 
     steps:
@@ -45,7 +52,7 @@ jobs:
 
       - name: Get build type and RPi OS image name
         run: |
-          build_type="${{ matrix.architecture }}${{ matrix.build_type_suffix }}"
+          build_type="${{ matrix.architecture }}${{ inputs.build_type_suffix }}"
           echo "BUILD_TYPE=${build_type}" >> $GITHUB_ENV
           echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ env.DISTRO_NAME }}-${build_type}" >> $GITHUB_ENV
 
@@ -90,9 +97,9 @@ jobs:
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars "repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
-                     --extra-vars "top_level_pkg=pt-os${{ matrix.build_type_suffix }}" \
+                     --extra-vars "top_level_pkg=pt-os${{ inputs.build_type_suffix }}" \
                      --extra-vars "architecture=${{ matrix.architecture }}" \
-                     --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
+                     --extra-vars "{'full_install': ${{ inputs.build_type_suffix == '' }}}" \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
