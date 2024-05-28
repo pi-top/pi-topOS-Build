@@ -161,6 +161,17 @@
       when: full_install
       shell: update-alternatives --install /usr/bin/x-session-manager x-session-manager /usr/bin/openbox-session 99
 
+    - name: Make sure lightdm service folder for drop-ins exists
+      file:
+        path: /lib/systemd/system/lightdm.service.d/
+        state: directory
+
+    - name: Configure openbox-session
+      copy:
+        src: files/99-openbox-for-onboarding.conf
+        dest: /lib/systemd/system/lightdm.service.d/99-openbox-for-onboarding.conf
+        mode: '0644'
+
     - name: Disable Further Link for onboarding (using symlink)
       when: full_install
       file:
