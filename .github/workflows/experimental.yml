@@ -127,11 +127,11 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: debug
+      - name: Cleanup (to avoid CI space issues)
         run: |
-          df -h
-          ls -l
-          ls -lh playbooks/artifacts
+          ls -l playbooks/artifacts
+          sudo rm -f playbooks/artifacts/*.zip
+          ls -l playbooks/artifacts
 
       - name: Upload OS zip contents
         uses: actions/upload-artifact@v3
