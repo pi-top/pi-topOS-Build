@@ -127,6 +127,12 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      - name: debug
+        run: |
+          df -h
+          ls -l
+          ls -lh playbooks/artifacts
+
       - name: Upload OS zip contents
         uses: actions/upload-artifact@v3
         with:
