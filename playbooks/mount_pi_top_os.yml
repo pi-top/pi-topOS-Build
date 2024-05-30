@@ -101,7 +101,7 @@
     - name: Mount boot
       become: true
       mount:
-        path: "{{ pt_os_mount_point }}/boot"
+        path: "{{ pt_os_mount_point }}/boot/firmware"
         src: "PARTUUID={{ boot.partuuid }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/pi-top-fstab
