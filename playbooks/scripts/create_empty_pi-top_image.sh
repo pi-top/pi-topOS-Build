@@ -27,8 +27,8 @@ function get_loop_devices_associated_with_file() {
 }
 
 # Check that Raspberry Pi OS image has been mounted correctly
-if [ ! -d "$base_os_dir/boot/" ]; then
-	printf "%s/boot/ doesn't exist, \nIt needs to be mounted into a flat file system since the copy is an rsync. \nParitions not mounted into / will be ignored" "$base_os_dir"
+if [ ! -d "$base_os_dir/boot/firmware/" ]; then
+	printf "%s/boot/firmware/ doesn't exist, \nIt needs to be mounted into a flat file system since the copy is an rsync. \nParitions not mounted into / will be ignored" "$base_os_dir"
 	exit
 fi
 echo "=== Cleaning up any existing temp files ==="
@@ -203,8 +203,8 @@ mount -v "${new_loop_device}${ID_ROOTFS}" "${pi_top_dir}" -t ext4
 mkdir -p "${pi_top_dir}/recovery"
 mount -v "${new_loop_device}${ID_RECOVERY}" "${pi_top_dir}/recovery" -t vfat
 
-mkdir -p "${pi_top_dir}/boot"
-mount -v "${new_loop_device}${ID_BOOT}" "${pi_top_dir}/boot" -t vfat
+mkdir -p "${pi_top_dir}/boot/firmware"
+mount -v "${new_loop_device}${ID_BOOT}" "${pi_top_dir}/boot/firmware" -t vfat
 
 echo "=== Copying OS files to new image ==="
 echo "Rsyncing from $base_os_dir to $pi_top_dir"
@@ -240,13 +240,13 @@ sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOT
 echo "New /etc/fstab :"
 cat "${pi_top_dir}/etc/fstab"
 
-echo "Old /boot/cmdline.txt :"
-cat "${pi_top_dir}/boot/cmdline.txt"
+echo "Old /boot/firmware/cmdline.txt :"
+cat "${pi_top_dir}/boot/firmware/cmdline.txt"
 
-sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW} /1" "${pi_top_dir}/boot/cmdline.txt"
+sed -i "s/PARTUUID=.*-${PART_NUM_ROOTFS_ORIG} /PARTUUID=${IMGID}-${PART_NUM_ROOTFS_NEW} /1" "${pi_top_dir}/boot/firmware/cmdline.txt"
 
-echo "New /boot/cmdline.txt :"
-cat "${pi_top_dir}/boot/cmdline.txt"
+echo "New /boot/firmware/cmdline.txt :"
+cat "${pi_top_dir}/boot/firmware/cmdline.txt"
 
 echo "=== Checking if ${new_image_file} is already mounted ==="
 if mount | grep -q "$pi_top_dir"; then

@@ -70,13 +70,13 @@
     - name: Copy boot config.txt
       copy:
         src: files/config.txt
-        dest: /boot/config.txt
+        dest: /boot/firmware/config.txt
         mode: '0755'
 
     - name: Copy boot config.txt backup
       copy:
         src: files/config.txt
-        dest: /boot/config.txt.orig
+        dest: /boot/firmware/config.txt.orig
         mode: '0755'
 
 ########
@@ -196,7 +196,7 @@
 
     - name: Set up virtual Ethernet driver for pi-top [4] display port
       replace:
-        path: /boot/cmdline.txt
+        path: /boot/firmware/cmdline.txt
         regexp: "{{ item.original }}"
         replace: "{{ item.replace }}"
       with_items:
@@ -205,11 +205,11 @@
 
     - name: Clean boot configuration - Disable Raspberry Pi logo on boot screen
       shell: |
-        echo "$(cat /boot/cmdline.txt) logo.nologo" > /boot/cmdline.txt
+        echo "$(cat /boot/firmware/cmdline.txt) logo.nologo" > /boot/firmware/cmdline.txt
 
     - name: Clean boot configuration - Remove blinking cursor
       shell: |
-        echo "$(cat /boot/cmdline.txt) vt.global_cursor_default=0" > /boot/cmdline.txt
+        echo "$(cat /boot/firmware/cmdline.txt) vt.global_cursor_default=0" > /boot/firmware/cmdline.txt
 
     - name: Clean boot configuration - Disable boot kernel warnings/errors
       # Usually harmless, always scary
@@ -221,7 +221,7 @@
       # [    3.992474 ] usb 1-1.4.2: device not accepting address 8, error -71
       # [    5.713155 ] usb 1-1.4-port2: unable to enumerate USB device
       shell: |
-        echo "$(cat /boot/cmdline.txt) loglevel=0" > /boot/cmdline.txt
+        echo "$(cat /boot/firmware/cmdline.txt) loglevel=0" > /boot/firmware/cmdline.txt
 
 ###############################################################
 # Set user/password/wifi country initial configuration #
@@ -233,7 +233,7 @@
 
     - name: Set user & password
       shell: |
-        echo "pi:"'{{ password }}' > /boot/userconf
+        echo "pi:"'{{ password }}' > /boot/firmware/userconf
 
 #########################
 # General system config #

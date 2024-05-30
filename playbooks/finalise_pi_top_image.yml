@@ -46,7 +46,7 @@
         pt_image_device: "{{ rootfs_lo_device.stdout[:-2] }}"
 
     - name: Get the original device identifier (PARTUUID) from cmdline.txt
-      shell: "cat /tmp/pi-top-os/boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
+      shell: "cat /tmp/pi-top-os/boot/firmware/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
       register: device_identifier
 
     - name: Unmount
@@ -57,7 +57,7 @@
         - /dev
         - /proc
         - /sys
-        - /boot
+        - /boot/firmware
         - /recovery
         - # Not a typo - needed to unmount the root
       ignore_errors: true
