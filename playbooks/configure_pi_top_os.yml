@@ -143,6 +143,12 @@
         chmod 0600 /var/swap
         mkswap /var/swap
 
+    # /lib/arm-linux-gnueabihf/ld-linux.so.3 is missing on armhf, causing issues with some packages
+    # https://github.com/raspberrypi/bookworm-feedback/issues/256
+    - name: Add symlink to ld-linux.so.3 on armhf
+      when: build_type == "armhf"
+      shell: ln -s /lib/ld-linux-armhf.so.3 /lib/arm-linux-gnueabihf/ld-linux.so.3
+
 ###########################################
 # Onboarding setup: systemd/dbus services #
 ###########################################
