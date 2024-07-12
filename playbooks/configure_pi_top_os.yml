@@ -73,6 +73,11 @@
         dest: /boot/firmware/config.txt
         mode: '0755'
 
+    - name: Enable 64 bit mode
+      when: build_type == "arm64" or build_type == "arm64-lite"
+      shell: |
+        echo "# Run in 64-bit mode\narm_64bit=1" | tee -a /boot/firmware/config.txt
+
     - name: Copy boot config.txt backup
       copy:
         src: files/config.txt
