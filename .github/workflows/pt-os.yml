@@ -116,7 +116,7 @@ jobs:
       - name: Cleanup (to avoid CI space issues)
         run: |
           ls -l playbooks/artifacts
-          sudo rm -f playbooks/artifacts/*.zip
+          sudo rm -f playbooks/artifacts/*.img
           ls -l playbooks/artifacts
 
       - name: Get current date
@@ -130,7 +130,6 @@ jobs:
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
-            !**/*.zip
 
       - name: Print metadata
         run: cat playbooks/artifacts/metadata.txt
