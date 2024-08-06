@@ -15,12 +15,16 @@ on:
       distro_name:
         description: 'OS distribution'
         required: true
-        default: 'bullseye'
-        type: string
+        default: 'bookworm'
+        type: choice
+        options:
+        - bullseye
+        - bookworm
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    # runs-on: ubuntu-22.04
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:
@@ -110,6 +114,12 @@ jobs:
           ${ANSIBLE} --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      playbooks/analyse_build.yml
 
+      - name: Cleanup (to avoid CI space issues)
+        run: |
+          ls -l playbooks/artifacts
+          sudo rm -f playbooks/artifacts/*.img
+          ls -l playbooks/artifacts
+
       - name: Get current date
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
@@ -121,7 +131,6 @@ jobs:
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
-            !**/*.zip
 
       - name: Print metadata
         run: cat playbooks/artifacts/metadata.txt

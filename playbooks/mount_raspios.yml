@@ -11,7 +11,7 @@
 
     - name: Don't continue if already mounted...
       stat:
-        path: "{{ raspi_os_mount_point }}/boot"
+        path: "{{ raspi_os_mount_point }}/boot/firmware"
       register: raspi_os_file_details
 
     - meta: end_host
@@ -42,7 +42,7 @@
     # Mount loopback device to mountpoint
 
     - name: blkid raspi boot
-      shell: "blkid -l -o export -t LABEL='boot'"
+      shell: "blkid -l -o export -t LABEL='bootfs'"
       register: blkid_raspi_boot_stdout
 
     - debug:
@@ -92,7 +92,7 @@
     - name: Mount boot
       become: true
       mount:
-        path: "{{ raspi_os_mount_point }}/boot"
+        path: "{{ raspi_os_mount_point }}/boot/firmware"
         src: "PARTUUID={{ boot.partuuid }}"
         fstype: "{{ boot.fstype }}"
         fstab: /tmp/raspi-os-fstab
