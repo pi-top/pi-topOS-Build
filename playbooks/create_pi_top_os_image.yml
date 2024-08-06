@@ -26,8 +26,8 @@
       become: true
       # recovery  = 128MB
       # boot      = 512MB
-      # rootfs    = 13GB (prevents space issues during upgrade)
-      shell: scripts/create_empty_pi-top_image.sh 128 512 13
+      # rootfs    = 11GB (prevents space issues during upgrade)
+      shell: scripts/create_empty_pi-top_image.sh 128 512 11
       when: recreate_pi_top_os_image or new_image_file.stat.exists == false
 
     - name: Create metadata file

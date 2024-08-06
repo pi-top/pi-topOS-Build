@@ -25,8 +25,7 @@ env:
 
 jobs:
   build:
-    # runs-on: ubuntu-22.04
-    runs-on: self-hosted
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -121,14 +120,19 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      - name: Cleanup (to avoid CI space issues)
+        run: |
+          ls -l playbooks/artifacts
+          sudo rm -f playbooks/artifacts/*.img
+          ls -l playbooks/artifacts
+
       - name: Upload OS zip contents
         uses: actions/upload-artifact@v3
         with:
           name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: |
-            playbooks/artifacts/*
-            !**/*.zip
+            playbooks/artifacts/*.zip
 
       - name: Print metadata
         run: cat playbooks/artifacts/metadata.txt
