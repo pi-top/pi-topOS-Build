@@ -21,7 +21,13 @@
         image_path: "{{ image_folder }}/{{ image_name }}.img"
 
     - name: Extract OS image
-      shell: "unxz -kv {{ image_folder }}/{{ image_name }}.img.xz"
+      shell: |
+        IMG_FILE="{{ image_folder }}/{{ image_name }}.img"
+        if [ ! -f "$IMG_FILE" ]; then
+          echo "Extracting OS image..."
+          unxz -kv {{ image_folder }}/{{ image_name }}.img.xz
+        fi
+        [ -f "$IMG_FILE" ]
 
     # Ensure that a loopback device is associated with image
 

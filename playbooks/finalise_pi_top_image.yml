@@ -1,5 +1,4 @@
 - hosts: localhost
-  connection: chroot
 
   gather_facts: true
   become: true
@@ -49,6 +48,16 @@
       shell: "cat /tmp/pi-top-os/boot/firmware/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
       register: device_identifier
 
+    - name: mount debug
+      shell: "mount"
+
+    - name: Unmount raspios
+      shell: "umount --force --verbose /tmp/raspi-os{{ item }}"
+      loop:
+        - /boot/firmware
+        - # Not a typo - needed to unmount the root
+      ignore_errors: true
+
     - name: Unmount
       # Although umount can be called with recurse it fails, the mount point need to be unmounted in order
       shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"
@@ -61,6 +70,9 @@
         - /recovery
         - # Not a typo - needed to unmount the root
       ignore_errors: true
+
+    - name: mount debug
+      shell: "mount"
 
     - name: zero empty space
       shell: "zerofree -v {{ rootfs_device }}"

@@ -36,6 +36,13 @@ jobs:
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v2.7.0
 
+      - name: Display run information
+        run: |
+          echo "Repository: ${{ env.REPO_NAME }}"
+          echo "Distro: ${{ env.DISTRO_NAME }}"
+          echo "Build type: ${{ matrix.build_type_suffix }}"
+          echo "Architecture: ${{ matrix.architecture }}"
+
       - name: Checkout code
         uses: actions/checkout@v4
         with:
