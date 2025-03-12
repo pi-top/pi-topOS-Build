@@ -338,6 +338,7 @@
           # - raspberrypi-ui-mods
           - libpam-chksshpwd  # SSH desktop password check - stock check for "raspberry"
           # - pprompt  # show prompt if PAM leaves breadcrumb
+          - libreoffice-*
 
     # TODO: move file management to post-config step (finalise)
     #     use mount, not chroot
@@ -367,6 +368,8 @@
         - /var/cache/apt/archives
         # remove all logs
         - /var/log/journal
+        # dpkg: warning: while removing libreoffice-common, directory '/etc/libreoffice/registry' not empty so not removed
+        - /etc/libreoffice
 
     # systemd will fail if system does not contain a
     # (possibly empty) /etc/machine-id file
