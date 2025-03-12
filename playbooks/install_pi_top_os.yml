@@ -86,6 +86,11 @@
         dest: /recovery/autoboot.txt
         mode: '0755'
 
+    - name: Prevent systemd services from restarting during upgrade
+      shell: |
+        dpkg-divert --add --rename /usr/sbin/invoke-rc.d
+        ln -s /bin/true /usr/sbin/invoke-rc.d
+
     # TODO: move to a new stage
     - name: Update all packages to the latest version
       apt:
@@ -94,3 +99,8 @@
       register: apt_status
       retries: 5
       until: apt_status is success
+
+    - name: Restore invoke-rc.d
+      shell: |
+        rm /usr/sbin/invoke-rc.d
+        dpkg-divert --remove --rename /usr/sbin/invoke-rc.d
