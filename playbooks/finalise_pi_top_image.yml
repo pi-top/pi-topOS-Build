@@ -48,31 +48,41 @@
       shell: "cat /tmp/pi-top-os/boot/firmware/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
       register: device_identifier
 
-    - name: mount debug
-      shell: "mount"
-
-    - name: Unmount raspios
-      shell: "umount --force --verbose /tmp/raspi-os{{ item }}"
-      loop:
-        - /boot/firmware
-        - # Not a typo - needed to unmount the root
+    - name: Check for any processes holding mount points open
+      shell: |
+        echo "lsof /dev:"
+        lsof /dev
+        echo "lsof /dev/pts:"
+        lsof /dev/pts
       ignore_errors: true
 
     - name: Unmount
       # Although umount can be called with recurse it fails, the mount point need to be unmounted in order
-      shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"
+      shell: |
+        MOUNT_POINT="/tmp/pi-top-os{{ item }}"
+        if ! mountpoint -q "$MOUNT_POINT"; then
+          echo "$MOUNT_POINT is not mounted - skipping"
+          return
+        fi
+        echo "Unmounting $MOUNT_POINT..."
+        if umount --verbose "$MOUNT_POINT"; then
+            echo "$MOUNT_POINT successfully unmounted."
+        else
+            echo "Failed to unmount $MOUNT_POINT - checking what processes hold the mount point open:"
+            lsof $MOUNT_POINT || true
+            sync
+            sleep 5
+            echo "Trying force unmount..."
+            umount --verbose -f "$MOUNT_POINT" && echo "Force unmount successful." || echo "Force unmount failed." && exit 1
+        fi
       loop:
         - /dev/pts
-        - /dev
         - /proc
         - /sys
+        - /dev
         - /boot/firmware
         - /recovery
         - # Not a typo - needed to unmount the root
-      ignore_errors: true
-
-    - name: mount debug
-      shell: "mount"
 
     - name: zero empty space
       shell: "zerofree -v {{ rootfs_device }}"
