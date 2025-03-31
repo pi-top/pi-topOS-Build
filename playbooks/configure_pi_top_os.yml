@@ -203,6 +203,9 @@
 #########################
 # General system config #
 #########################
+    - name: Unblock all wireless devices
+      shell: rfkill unblock all
+
     - name: Setup pt-os-first-boot-setup to run on first boot
       shell: /usr/sbin/pt-os-first-boot-setup prepare
 
