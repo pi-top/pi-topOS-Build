@@ -151,6 +151,11 @@
 ###########################################
 # Onboarding setup: systemd/dbus services #
 ###########################################
+    - name: Enable first boot app (from pt-os-web-portal package)
+      when: full_install
+      shell: |
+        ln -sf /usr/lib/python3/dist-packages/pt_os_web_portal/resources/pt-first-boot-app.desktop /etc/xdg/autostart/pt-first-boot-app.desktop
+
     - name: Make sure lightdm service folder for drop-ins exists
       file:
         path: /lib/systemd/system/lightdm.service.d/
