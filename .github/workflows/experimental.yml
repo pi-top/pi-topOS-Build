@@ -10,14 +10,22 @@ on:
       - "ansible.cfg"
       - ".github/workflows/experimental.yml"
   workflow_dispatch:
-    # No inputs defined here so that push behaviour matches all manual builds
+    inputs:
+      custom_script:
+        description: 'Custom scripts to apply'
+        required: true
+        type: choice
+        options:
+          - ''
+          - killeen
+          - lausd
+        default: ''
   schedule:
     # Run daily at midnight
     - cron:  '0 0 * * *'
   pull_request:
     branches:
       - master
-
 
 env:
   DISTRO_NAME: "bookworm"
@@ -114,6 +122,23 @@ jobs:
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "custom_script=${{ github.event.inputs.custom_script }}" \
+                     --extra-vars "KILLEEN_NETWORK_SSID=${{ secrets.KILLEEN_NETWORK_SSID }}" \
+                     --extra-vars "KILLEEN_NETWORK_PASSWORD=${{ secrets.KILLEEN_NETWORK_PASSWORD }}" \
+                     --extra-vars "KILLEEN_PI_USER_PASSWORD=${{ secrets.KILLEEN_PI_USER_PASSWORD }}" \
+                     --extra-vars "KILLEEN_NTP_SERVER=${{ secrets.KILLEEN_NTP_SERVER }}" \
+                     --extra-vars 'LAUSD_ROOT_CA2_CRT_CONTENT='"'"'${{ secrets.LAUSD_ROOT_CA2_CRT_CONTENT }}'"'"'' \
+                     --extra-vars 'LAUSD_SUB_CA2_CRT_CONTENT='"'"'${{ secrets.LAUSD_SUB_CA2_CRT_CONTENT }}'"'"'' \
+                     --extra-vars "LAUSD_ROOT_CA2_CRT_PATH=${{ secrets.LAUSD_ROOT_CA2_CRT_PATH }}" \
+                     --extra-vars "LAUSD_SUB_CA2_CRT_PATH=${{ secrets.LAUSD_SUB_CA2_CRT_PATH }}" \
+                     --extra-vars "LAUSD_NETWORK_SSID=${{ secrets.LAUSD_NETWORK_SSID }}" \
+                     --extra-vars "LAUSD_NETWORK_SSID_ALTERNATE=${{ secrets.LAUSD_NETWORK_SSID_ALTERNATE }}" \
+                     --extra-vars "LAUSD_NETWORK_PASSWORD=${{ secrets.LAUSD_NETWORK_PASSWORD }}" \
+                     --extra-vars "LAUSD_NETWORK_CONNECTION_FILE_FOLDER=${{ secrets.LAUSD_NETWORK_CONNECTION_FILE_FOLDER }}" \
+                     --extra-vars "LAUSD_NETWORK_IDENTITY=${{ secrets.LAUSD_NETWORK_IDENTITY }}" \
+                     --extra-vars "LAUSD_NETWORK_KEY_MGMT=${{ secrets.LAUSD_NETWORK_KEY_MGMT }}" \
+                     --extra-vars "LAUSD_NETWORK_EAP=${{ secrets.LAUSD_NETWORK_EAP }}" \
+                     --extra-vars "LAUSD_NETWORK_PHASE2_AUTH=${{ secrets.LAUSD_NETWORK_PHASE2_AUTH }}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
@@ -121,6 +146,8 @@ jobs:
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "custom_script=${{ github.event.inputs.custom_script }}" \
+                     --extra-vars "zip_password=${{ secrets.ZIP_PASSWORD_FOR_CUSTOM_BUILD }}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."

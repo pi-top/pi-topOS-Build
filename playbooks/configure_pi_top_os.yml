@@ -20,6 +20,8 @@
 
     build_type: armhf
 
+    custom_script: ""
+
 
   tasks:
     - name: Determine if full build
@@ -289,7 +291,8 @@
           - dillo  # No need for other browsers
           - qpdfview  # PDFs handled by Chromium
           - galculator  # replaced by 'gnome-calculator', a multi-touch friendly calculator
-          # IDE - default to VS Code
+          - firefox
+          # IDE
           - geany
           - geany-common
           - thonny
@@ -358,6 +361,52 @@
 
     - name: Consolidate duplicate files in /usr/share/doc
       shell: 'hardlink -t /usr/share/doc'
+
+########################
+# Apply custom scripts #
+########################
+    - name: Copy custom scripts to remote
+      when: custom_script != ""
+      copy:
+        src: scripts/custom/
+        dest: /tmp/custom/
+    
+    - name: Execute custom script
+      when: custom_script != ""
+      shell: |
+        if [ ! -f /tmp/custom/{{ custom_script }}.sh ]; then
+          echo "Script {{ custom_script }} not found, skipping..."
+        else
+          echo "Setting environment variables for {{ custom_script }}"
+          case {{ custom_script }} in
+            killeen)
+              export KILLEEN_NETWORK_SSID="{{ KILLEEN_NETWORK_SSID }}"
+              export KILLEEN_NETWORK_PASSWORD="{{ KILLEEN_NETWORK_PASSWORD }}"
+              export KILLEEN_PI_USER_PASSWORD="{{ KILLEEN_PI_USER_PASSWORD }}"
+              export KILLEEN_NTP_SERVER="{{ KILLEEN_NTP_SERVER }}"
+              ;;
+            lausd)
+              export LAUSD_ROOT_CA2_CRT_CONTENT="{{ LAUSD_ROOT_CA2_CRT_CONTENT }}"
+              export LAUSD_SUB_CA2_CRT_CONTENT="{{ LAUSD_SUB_CA2_CRT_CONTENT }}"
+              export LAUSD_ROOT_CA2_CRT_PATH="{{ LAUSD_ROOT_CA2_CRT_PATH }}"
+              export LAUSD_SUB_CA2_CRT_PATH="{{ LAUSD_SUB_CA2_CRT_PATH }}"
+              export LAUSD_NETWORK_SSID="{{ LAUSD_NETWORK_SSID }}"
+              export LAUSD_NETWORK_SSID_ALTERNATE="{{ LAUSD_NETWORK_SSID_ALTERNATE }}"
+              export LAUSD_NETWORK_PASSWORD="{{ LAUSD_NETWORK_PASSWORD }}"
+              export LAUSD_NETWORK_CONNECTION_FILE_FOLDER="{{ LAUSD_NETWORK_CONNECTION_FILE_FOLDER }}"
+              export LAUSD_NETWORK_IDENTITY="{{ LAUSD_NETWORK_IDENTITY }}"
+              export LAUSD_NETWORK_KEY_MGMT="{{ LAUSD_NETWORK_KEY_MGMT }}"
+              export LAUSD_NETWORK_EAP="{{ LAUSD_NETWORK_EAP }}"
+              export LAUSD_NETWORK_PHASE2_AUTH="{{ LAUSD_NETWORK_PHASE2_AUTH }}"
+              ;;
+            *)
+              echo "No environment variables set for {{ custom_script }}"
+              ;;
+          esac
+          echo "Executing script: {{ custom_script }}"
+          /bin/bash -ex /tmp/custom/{{ custom_script }}.sh
+        fi
+        rm -rf /tmp/custom/
 
 ############
 # Finalise #
