@@ -136,10 +136,10 @@
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
     - set_fact:
-        build_release_or_customization: "{{ build_repo_name if custom_script == '' else custom_script }}"
+        customization: "{{ '_' + custom_script if custom_script != '' else '' }}"
 
     - set_fact:
-        output_filename: "pi-topOS_{{ distro_name }}_{{ build_release_or_customization }}_{{ build_type }}_{{ ansible_date_time.date }}_B{{ build_number }}"
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}{{ customization }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
     - name: Create a hard link to the image to use as the output filename
       file:
