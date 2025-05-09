@@ -162,10 +162,20 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      - name: Check if custom script is provided
+        id: customization
+        # If no custom script is provided, the customization will be an empty string, otherwise "_" + {custom_script}
+        run: |
+          if [ -z "${{ github.event.inputs.custom_script }}" ]; then
+            echo "CUSTOMIZATION=''" >> $GITHUB_ENV
+          else
+            echo "CUSTOMIZATION='_${{ github.event.inputs.custom_script }}'" >> $GITHUB_ENV
+          fi
+
       - name: Upload OS zip contents
         uses: actions/upload-artifact@v4
         with:
-          name: pi-topOS_${{ github.event.inputs.distro_name }}_${{ github.event.inputs.repo_name }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}${{ env.CUSTOMIZATION }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
