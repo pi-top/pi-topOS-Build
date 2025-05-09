@@ -176,8 +176,3 @@
       file:
         dest: "{{ output_directory }}/{{ output_filename }}"
         state: absent
-
-    - name: Remove the hard link to avoid any confusion
-      file:
-        dest: "{{ output_directory }}/{{ output_filename }}"
-        state: absent
