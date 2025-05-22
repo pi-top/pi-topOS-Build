@@ -22,7 +22,6 @@ on:
         - bookworm
       custom_script:
         description: 'Custom scripts to apply'
-        required: true
         type: choice
         options:
           - ''
