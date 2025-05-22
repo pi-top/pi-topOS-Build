@@ -135,11 +135,15 @@
     - name: "Truncate the image file down to the new size"
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
-    - set_fact:
-        customization: "{{ '_' + custom_script if custom_script != '' else '' }}"
+    - name: Set output filename
+      when: custom_script != ''
+      set_fact:
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}_{{ custom_script }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
-    - set_fact:
-        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}{{ customization }}_{{ ansible_date_time.date }}_B{{ build_number }}"
+    - name: Set output filename
+      when: custom_script == ''
+      set_fact:
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
     - name: Create a hard link to the image to use as the output filename
       file:
