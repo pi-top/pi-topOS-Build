@@ -185,7 +185,7 @@ jobs:
       - name: Authenticate with GCP
         uses: "google-github-actions/auth@v1.1.1"
         with:
-          credentials_json: ${{ secrets.WEB_GCR_UPLOAD_KEY }}
+          credentials_json: ${{ secrets.BUILDS_GCR_UPLOAD_KEY }}
 
       - name: Upload OS zip to GCS
         uses: google-github-actions/upload-cloud-storage@v1.0.3
