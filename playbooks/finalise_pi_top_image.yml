@@ -1,5 +1,4 @@
 - hosts: localhost
-  connection: chroot
 
   gather_facts: true
   become: true
@@ -14,7 +13,8 @@
     distro_name: bullseye
     build_type: armhf
     zip_image: true
-  
+    custom_script: ''
+    zip_password: ''
   tasks:
 
     - name: Clean up QEMU chrooting artifacts
@@ -46,21 +46,44 @@
         pt_image_device: "{{ rootfs_lo_device.stdout[:-2] }}"
 
     - name: Get the original device identifier (PARTUUID) from cmdline.txt
-      shell: "cat /tmp/pi-top-os/boot/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
+      shell: "cat /tmp/pi-top-os/boot/firmware/cmdline.txt| tr ' ' '\n' | grep 'root=PARTUUID=' | awk -F'[= -]' '{print $3}'"
       register: device_identifier
+
+    - name: Check for any processes holding mount points open
+      shell: |
+        echo "lsof /dev:"
+        lsof /dev
+        echo "lsof /dev/pts:"
+        lsof /dev/pts
+      ignore_errors: true
 
     - name: Unmount
       # Although umount can be called with recurse it fails, the mount point need to be unmounted in order
-      shell: "umount --force --verbose /tmp/pi-top-os{{ item }}"
+      shell: |
+        MOUNT_POINT="/tmp/pi-top-os{{ item }}"
+        if ! mountpoint -q "$MOUNT_POINT"; then
+          echo "$MOUNT_POINT is not mounted - skipping"
+          return
+        fi
+        echo "Unmounting $MOUNT_POINT..."
+        if umount --verbose "$MOUNT_POINT"; then
+            echo "$MOUNT_POINT successfully unmounted."
+        else
+            echo "Failed to unmount $MOUNT_POINT - checking what processes hold the mount point open:"
+            lsof $MOUNT_POINT || true
+            sync
+            sleep 5
+            echo "Trying force unmount..."
+            umount --verbose -f "$MOUNT_POINT" && echo "Force unmount successful." || echo "Force unmount failed." && exit 1
+        fi
       loop:
         - /dev/pts
-        - /dev
         - /proc
         - /sys
-        - /boot
+        - /dev
+        - /boot/firmware
         - /recovery
         - # Not a typo - needed to unmount the root
-      ignore_errors: true
 
     - name: zero empty space
       shell: "zerofree -v {{ rootfs_device }}"
@@ -112,7 +135,14 @@
     - name: "Truncate the image file down to the new size"
       shell: "truncate --size={{ final_image_size }} new-image.img"
 
-    - set_fact:
+    - name: Set output filename
+      when: custom_script != ''
+      set_fact:
+        output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}_{{ custom_script }}_{{ ansible_date_time.date }}_B{{ build_number }}"
+
+    - name: Set output filename
+      when: custom_script == ''
+      set_fact:
         output_filename: "pi-topOS_{{ distro_name }}_{{ build_repo_name }}_{{ build_type }}_{{ ansible_date_time.date }}_B{{ build_number }}"
 
     - name: Create a hard link to the image to use as the output filename
@@ -121,20 +151,30 @@
         dest: "{{ output_directory }}/{{ output_filename }}.img"
         state: hard
 
+    - name: Check if password is provided for custom build
+      fail:
+        msg: "zip_password must be set for custom builds"
+      when: custom_script != '' and (zip_password is not defined or zip_password == '')
+
     - name: Compress image into zip
       when: zip_image
-      archive:
-        path:
-          - "{{ output_directory }}/{{ output_filename }}.img"
-          - "{{ output_directory }}/metadata.txt"
-        dest: "{{ output_directory }}/{{ output_filename }}.zip"
-        format: zip
+      shell: |
+        zip -j {{ '-P "' + zip_password + '"' if custom_script != '' else '' }} \
+          "{{ output_directory }}/{{ output_filename }}.zip" \
+          "{{ output_directory }}/{{ output_filename }}.img" \
+          "{{ output_directory }}/metadata.txt"
       register: zip_result
 
-    - name: Verify zip
-      fail:
-        msg: Files were missing from the output zip
-      when: zip_image and zip_result.missing | length > 0
+    - name: Verify zip contents
+      when: zip_image
+      shell: |
+        unzip -l {{ '-P "' + zip_password + '"' if custom_script != '' else '' }} \
+          "{{ output_directory }}/{{ output_filename }}.zip" > zip_contents.tmp && \
+        grep -q "{{ output_filename }}.img" zip_contents.tmp && \
+        grep -q "metadata.txt" zip_contents.tmp && \
+        rm zip_contents.tmp
+      register: verify_result
+      failed_when: verify_result.rc != 0
 
     - name: Remove the hard link to avoid any confusion
       file:

@@ -10,7 +10,15 @@ on:
       - "ansible.cfg"
       - ".github/workflows/experimental.yml"
   workflow_dispatch:
-    # No inputs defined here so that push behaviour matches all manual builds
+    inputs:
+      custom_script:
+        description: 'Custom scripts to apply'
+        type: choice
+        options:
+          - ''
+          - killeen
+          - lausd
+        default: ''
   schedule:
     # Run daily at midnight
     - cron:  '0 0 * * *'
@@ -18,9 +26,8 @@ on:
     branches:
       - master
 
-
 env:
-  DISTRO_NAME: "bullseye"
+  DISTRO_NAME: "bookworm"
   REPO_NAME: "experimental"
 
 jobs:
@@ -36,8 +43,15 @@ jobs:
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v2.7.0
 
+      - name: Display run information
+        run: |
+          echo "Repository: ${{ env.REPO_NAME }}"
+          echo "Distro: ${{ env.DISTRO_NAME }}"
+          echo "Build type: ${{ matrix.build_type_suffix }}"
+          echo "Architecture: ${{ matrix.architecture }}"
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -87,6 +101,10 @@ jobs:
           echo "==> Running mount_pi_top_os playbook..."
           ${ANSIBLE} playbooks/mount_pi_top_os.yml
 
+          echo "==> Running umount_raspios playbook..."
+          ${ANSIBLE} --extra-vars "image_name=${{ env.IMAGE_NAME }}" \
+                      playbooks/umount_raspios.yml
+
           echo "==> Running install_pi_top_os playbook..."
           ${ANSIBLE} --extra-vars "repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "distro_name=${{ env.DISTRO_NAME }}" \
@@ -103,6 +121,23 @@ jobs:
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "custom_script=${{ github.event.inputs.custom_script }}" \
+                     --extra-vars "KILLEEN_NETWORK_SSID=${{ secrets.KILLEEN_NETWORK_SSID }}" \
+                     --extra-vars "KILLEEN_NETWORK_PASSWORD=${{ secrets.KILLEEN_NETWORK_PASSWORD }}" \
+                     --extra-vars "KILLEEN_PI_USER_PASSWORD=${{ secrets.KILLEEN_PI_USER_PASSWORD }}" \
+                     --extra-vars "KILLEEN_NTP_SERVER=${{ secrets.KILLEEN_NTP_SERVER }}" \
+                     --extra-vars 'LAUSD_ROOT_CA2_CRT_CONTENT='"'"'${{ secrets.LAUSD_ROOT_CA2_CRT_CONTENT }}'"'"'' \
+                     --extra-vars 'LAUSD_SUB_CA2_CRT_CONTENT='"'"'${{ secrets.LAUSD_SUB_CA2_CRT_CONTENT }}'"'"'' \
+                     --extra-vars "LAUSD_ROOT_CA2_CRT_PATH=${{ secrets.LAUSD_ROOT_CA2_CRT_PATH }}" \
+                     --extra-vars "LAUSD_SUB_CA2_CRT_PATH=${{ secrets.LAUSD_SUB_CA2_CRT_PATH }}" \
+                     --extra-vars "LAUSD_NETWORK_SSID=${{ secrets.LAUSD_NETWORK_SSID }}" \
+                     --extra-vars "LAUSD_NETWORK_SSID_ALTERNATE=${{ secrets.LAUSD_NETWORK_SSID_ALTERNATE }}" \
+                     --extra-vars "LAUSD_NETWORK_PASSWORD=${{ secrets.LAUSD_NETWORK_PASSWORD }}" \
+                     --extra-vars "LAUSD_NETWORK_CONNECTION_FILE_FOLDER=${{ secrets.LAUSD_NETWORK_CONNECTION_FILE_FOLDER }}" \
+                     --extra-vars "LAUSD_NETWORK_IDENTITY=${{ secrets.LAUSD_NETWORK_IDENTITY }}" \
+                     --extra-vars "LAUSD_NETWORK_KEY_MGMT=${{ secrets.LAUSD_NETWORK_KEY_MGMT }}" \
+                     --extra-vars "LAUSD_NETWORK_EAP=${{ secrets.LAUSD_NETWORK_EAP }}" \
+                     --extra-vars "LAUSD_NETWORK_PHASE2_AUTH=${{ secrets.LAUSD_NETWORK_PHASE2_AUTH }}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
@@ -110,6 +145,8 @@ jobs:
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_name=${{ env.REPO_NAME }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "custom_script=${{ github.event.inputs.custom_script }}" \
+                     --extra-vars "zip_password=${{ secrets.ZIP_PASSWORD_FOR_CUSTOM_BUILD }}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
@@ -120,14 +157,29 @@ jobs:
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      - name: Cleanup (to avoid CI space issues)
+        run: |
+          ls -l playbooks/artifacts
+          sudo rm -f playbooks/artifacts/*.img
+          ls -l playbooks/artifacts
+
+      - name: Check if custom script is provided
+        id: customization
+        # If no custom script is provided, the customization will be an empty string, otherwise "_" + {custom_script}
+        run: |
+          if [ -z "${{ github.event.inputs.custom_script }}" ]; then
+            echo "CUSTOMIZATION=" >> $GITHUB_ENV
+          else
+            echo "CUSTOMIZATION=_${{ github.event.inputs.custom_script }}" >> $GITHUB_ENV
+          fi
+
       - name: Upload OS zip contents
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          name: pi-topOS_${{ env.DISTRO_NAME }}_${{ env.REPO_NAME }}_${{ env.BUILD_TYPE }}${{ env.CUSTOMIZATION }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
           if-no-files-found: error
           path: |
-            playbooks/artifacts/*
-            !**/*.zip
+            playbooks/artifacts/*.zip
 
       - name: Print metadata
         run: cat playbooks/artifacts/metadata.txt

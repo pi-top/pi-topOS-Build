@@ -15,8 +15,19 @@ on:
       distro_name:
         description: 'OS distribution'
         required: true
-        default: 'bullseye'
-        type: string
+        default: 'bookworm'
+        type: choice
+        options:
+        - bullseye
+        - bookworm
+      custom_script:
+        description: 'Custom scripts to apply'
+        type: choice
+        options:
+          - ''
+          - killeen
+          - lausd
+        default: ''
 
 jobs:
   build:
@@ -31,8 +42,15 @@ jobs:
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v2.7.0
 
+      - name: Display run information
+        run: |
+          echo "Repository: ${{ github.event.inputs.repo_name }}"
+          echo "Distro: ${{ github.event.inputs.distro_name }}"
+          echo "Build type: ${{ matrix.build_type_suffix }}"
+          echo "Architecture: ${{ matrix.architecture }}"
+
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -42,7 +60,7 @@ jobs:
         run: |
           build_type="${{ matrix.architecture }}${{ matrix.build_type_suffix }}"
           echo "BUILD_TYPE=${build_type}" >> $GITHUB_ENV
-          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ inputs.distro_name }}-${build_type}" >> $GITHUB_ENV
+          echo "IMAGE_NAME=${{ env.RASPIOS_BUILD_DATE }}-raspios-${{ github.event.inputs.distro_name }}-${build_type}" >> $GITHUB_ENV
 
       - name: Install ansible and playbook dependencies
         # Install 'qemu-user-static' >v5 to allow 'arm64' chroot
@@ -82,55 +100,97 @@ jobs:
           echo "==> Running mount_pi_top_os playbook..."
           ${ANSIBLE} playbooks/mount_pi_top_os.yml
 
+          echo "==> Running umount_raspios playbook..."
+          ${ANSIBLE} --extra-vars "image_name=${{ env.IMAGE_NAME }}" \
+                      playbooks/umount_raspios.yml
+
           echo "==> Running install_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars "repo_name=${{ inputs.repo_name }}" \
-                     --extra-vars "distro_name=${{ inputs.distro_name }}" \
+          ${ANSIBLE} --extra-vars "repo_name=${{ github.event.inputs.repo_name }}" \
+                     --extra-vars "distro_name=${{ github.event.inputs.distro_name }}" \
                      --extra-vars "top_level_pkg=pt-os${{ matrix.build_type_suffix }}" \
                      --extra-vars "{'full_install': ${{ matrix.build_type_suffix == '' }}}" \
                      playbooks/install_pi_top_os.yml
 
           echo "==> Running configure_pi_top_os playbook..."
-          ${ANSIBLE} --extra-vars "distro_name=${{ inputs.distro_name }}" \
+          ${ANSIBLE} --extra-vars "distro_name=${{ github.event.inputs.distro_name }}" \
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      --extra-vars "build_repo_commit=$(git rev-parse HEAD)" \
                      --extra-vars "build_repo_commit_short=$(git rev-parse --short HEAD)" \
                      --extra-vars "build_action_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-                     --extra-vars "build_repo_name=${{ inputs.repo_name }}" \
+                     --extra-vars "build_repo_name=${{ github.event.inputs.repo_name }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "custom_script=${{ github.event.inputs.custom_script }}" \
+                     --extra-vars "KILLEEN_NETWORK_SSID=${{ secrets.KILLEEN_NETWORK_SSID }}" \
+                     --extra-vars "KILLEEN_NETWORK_PASSWORD=${{ secrets.KILLEEN_NETWORK_PASSWORD }}" \
+                     --extra-vars "KILLEEN_PI_USER_PASSWORD=${{ secrets.KILLEEN_PI_USER_PASSWORD }}" \
+                     --extra-vars "KILLEEN_NTP_SERVER=${{ secrets.KILLEEN_NTP_SERVER }}" \
+                     --extra-vars 'LAUSD_ROOT_CA2_CRT_CONTENT='"'"'${{ secrets.LAUSD_ROOT_CA2_CRT_CONTENT }}'"'"'' \
+                     --extra-vars 'LAUSD_SUB_CA2_CRT_CONTENT='"'"'${{ secrets.LAUSD_SUB_CA2_CRT_CONTENT }}'"'"'' \
+                     --extra-vars "LAUSD_ROOT_CA2_CRT_PATH=${{ secrets.LAUSD_ROOT_CA2_CRT_PATH }}" \
+                     --extra-vars "LAUSD_SUB_CA2_CRT_PATH=${{ secrets.LAUSD_SUB_CA2_CRT_PATH }}" \
+                     --extra-vars "LAUSD_NETWORK_SSID=${{ secrets.LAUSD_NETWORK_SSID }}" \
+                     --extra-vars "LAUSD_NETWORK_SSID_ALTERNATE=${{ secrets.LAUSD_NETWORK_SSID_ALTERNATE }}" \
+                     --extra-vars "LAUSD_NETWORK_PASSWORD=${{ secrets.LAUSD_NETWORK_PASSWORD }}" \
+                     --extra-vars "LAUSD_NETWORK_CONNECTION_FILE_FOLDER=${{ secrets.LAUSD_NETWORK_CONNECTION_FILE_FOLDER }}" \
+                     --extra-vars "LAUSD_NETWORK_IDENTITY=${{ secrets.LAUSD_NETWORK_IDENTITY }}" \
+                     --extra-vars "LAUSD_NETWORK_KEY_MGMT=${{ secrets.LAUSD_NETWORK_KEY_MGMT }}" \
+                     --extra-vars "LAUSD_NETWORK_EAP=${{ secrets.LAUSD_NETWORK_EAP }}" \
+                     --extra-vars "LAUSD_NETWORK_PHASE2_AUTH=${{ secrets.LAUSD_NETWORK_PHASE2_AUTH }}" \
                      playbooks/configure_pi_top_os.yml
 
           echo "==> Running finalise_pi_top_image playbook..."
-          ${ANSIBLE} --extra-vars "distro_name=${{ inputs.distro_name }}" \
+          ${ANSIBLE} --extra-vars "distro_name=${{ github.event.inputs.distro_name }}" \
                      --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
-                     --extra-vars "build_repo_name=${{ inputs.repo_name }}" \
+                     --extra-vars "build_repo_name=${{ github.event.inputs.repo_name }}" \
                      --extra-vars "build_type=${{ env.BUILD_TYPE }}" \
+                     --extra-vars "custom_script=${{ github.event.inputs.custom_script }}" \
+                     --extra-vars "zip_password=${{ secrets.ZIP_PASSWORD_FOR_CUSTOM_BUILD }}" \
                      playbooks/finalise_pi_top_image.yml
 
           echo "==> Running analyse_build playbook..."
           ${ANSIBLE} --extra-vars "build_number=${{ github.run_number || github.run_id }}" \
                      playbooks/analyse_build.yml
 
+      - name: Cleanup (to avoid CI space issues)
+        run: |
+          ls -l playbooks/artifacts
+          sudo rm -f playbooks/artifacts/*.img
+          ls -l playbooks/artifacts
+
       - name: Get current date
         id: date
         run: echo "DATE_STAMP=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
+      - name: Check if custom script is provided
+        id: customization
+        # If no custom script is provided, the customization will be an empty string, otherwise "_" + {custom_script}
+        run: |
+          if [ -z "${{ github.event.inputs.custom_script }}" ]; then
+            echo "FILENAME=pi-topOS_${{ github.event.inputs.distro_name }}_${{ github.event.inputs.repo_name }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}" >> $GITHUB_ENV
+          else
+            echo "FILENAME=pi-topOS_${{ github.event.inputs.distro_name }}_${{ github.event.inputs.repo_name }}_${{ env.BUILD_TYPE }}_${{ github.event.inputs.custom_script }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}" >> $GITHUB_ENV
+          fi
+
       - name: Upload OS zip contents
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: pi-topOS_${{ inputs.distro_name }}_${{ inputs.repo_name }}_${{ env.BUILD_TYPE }}_${{ env.DATE_STAMP }}_B${{ github.run_number || github.run_id }}
+          name: ${{ env.FILENAME }}
           if-no-files-found: error
           path: |
             playbooks/artifacts/*
-            !**/*.zip
 
       - name: Print metadata
         run: cat playbooks/artifacts/metadata.txt
 
-      - name: Upload OS zip to GCS
-        uses: google-github-actions/upload-cloud-storage@v0.4.0
+      - name: Authenticate with GCP
+        uses: "google-github-actions/auth@v1.1.1"
         with:
-          credentials: ${{ secrets.GOOGLE_CLOUD_UPLOAD_JSON_CREDENTIALS }}
+          credentials_json: ${{ secrets.BUILDS_GCR_UPLOAD_KEY }}
+
+      - name: Upload OS zip to GCS
+        uses: google-github-actions/upload-cloud-storage@v1.0.3
+        with:
           path: 'playbooks/artifacts'
           glob: '**/*.zip'
           parent: false
-          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ inputs.distro_name }}/
+          destination: ${{ secrets.GOOGLE_CLOUD_OS_UPLOAD_BUCKET }}/pi-topOS-${{ github.event.inputs.distro_name }}/
