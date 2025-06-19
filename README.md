@@ -1,23 +1,23 @@
 # pi-topOS Build
 
-This repository provides the build pipeline used for official pi-topOS images.
+This repository provides the build pipeline used for pi-topOS images. Go to https://www.pi-top.com/download for official releases!
 
 ## Build Types
-### Nightly Builds
+All builds are kept for 90 days in accordance with GitHub Actions' artifacts storage policy.
 
-Go [here](https://github.com/pi-top/pi-topOS-ansible-playbook/actions/workflows/bullseye-experimental.yml?query=event%3Aschedule) for nightly builds.
+### Release Candidate Builds
 
-These act as bleeding edge previews of pi-topOS. Packages are installed from PackageCloud's experimental repo, which is populated with the latest master packages of all pi-topOS software.
-
-GitHub Actions' artifacts are kept for 90 days.
+Go [here](https://github.com/pi-top/pi-topOS-Build/actions/workflows/bullseye-unstable.yml) for release candidate builds. These act as early release previews for pi-topOS. Packages are installed from PackageCloud's unstable repo, which is populated with packages that have had a GitHub Release.
 
 ### Preview Builds
 
 Go [here](https://github.com/pi-top/pi-topOS-Build/actions/workflows/bullseye-unstable.yml) for preview builds. These act as early release previews for pi-topOS. Packages are installed from PackageCloud's unstable repo, which is populated with packages that have had a GitHub Release.
 
-### Official Releases
+### Nightly Builds
 
-There are currently no official releases with this build toolchain.
+Go [here](https://github.com/pi-top/pi-topOS-ansible-playbook/actions/workflows/bullseye-experimental.yml?query=event%3Aschedule) for nightly builds.
+
+These act as bleeding edge previews of pi-topOS. Packages are installed from PackageCloud's experimental repo, which is populated with the latest master packages of all pi-topOS software.
 
 ## Using images from this repository
 
