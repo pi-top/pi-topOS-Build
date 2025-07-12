@@ -94,10 +94,21 @@ function configure_network() {
     create_network_connection_file $LAUSD_NETWORK_SSID_ALTERNATE
 }
 
+function add_wifi_monitor() {
+    echo "Installing wi-fi monitor..."
+    apt update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y wi-fi-connect-monitor
+    echo "Enabling wi-fi monitor for networks..."
+    ESCAPED_SSIDS=$(systemd-escape "$LAUSD_NETWORK_SSID $LAUSD_NETWORK_SSID_ALTERNATE")
+    systemctl enable wi-fi-connect-monitor@$ESCAPED_SSIDS.service
+    systemctl start wi-fi-connect-monitor@$ESCAPED_SSIDS.service
+}
+
 function main() {
     install_certificates
     update_ca_certificates
     configure_network
+    add_wifi_monitor
 }
 
 main
