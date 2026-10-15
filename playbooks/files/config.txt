@@ -81,3 +81,8 @@ start_x=1
 #///////////////////////
 # GPU memory allocation - default 128MB
 gpu_mem=128
+
+# SPI1 - the pi-top [4] OLED miniscreen uses it when the hub selects SPI bus 1.
+# Loaded here so /dev/spidev1.0 exists from the first boot: loading the overlay
+# at runtime (pi-topd) can fail to probe on some kernels, e.g. 6.12.109.
+dtoverlay=spi1-1cs
